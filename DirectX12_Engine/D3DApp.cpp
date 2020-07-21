@@ -8,7 +8,7 @@ D3DApp::~D3DApp()
 {
 }
 
-void D3DApp::Initialize(const std::shared_ptr<Win32App> window)
+void D3DApp::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath)
 {
 }
 
@@ -96,17 +96,6 @@ void D3DApp::BuildCommandObjects()
 
 	ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_fence.GetAddressOf())));
 	m_fenceEvent = CreateEvent(0, 0, 0, 0);
-}
-
-void D3DApp::BuildDescriptorHeaps()
-{
-	D3D12_DESCRIPTOR_HEAP_DESC rtvDescHeapDesc;
-	ZeroMemory(&rtvDescHeapDesc, sizeof(D3D12_DESCRIPTOR_HEAP_DESC));
-
-	rtvDescHeapDesc.NumDescriptors = m_iNumBuffers; 
-	rtvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	
-	ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvDescHeapDesc, IID_PPV_ARGS(m_rtvDescriptorHeap.GetAddressOf())));
 }
 
 void D3DApp::BuildRenderTargetViews()

@@ -36,6 +36,8 @@ bool Win32App::Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT 
 	this->m_windowClass.lpszClassName = m_windowClassName;
 	this->m_windowClass.hInstance = hInstance;
 	this->m_windowClass.lpfnWndProc = WinProc;
+	this->m_windowClass.hCursor = LoadCursor(0, IDC_ARROW);
+	this->m_windowClass.hIcon = LoadIcon(0, IDI_APPLICATION);
 
 	if (!RegisterClass(&m_windowClass))
 		return false;

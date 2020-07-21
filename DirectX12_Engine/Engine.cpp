@@ -20,31 +20,19 @@ Engine * Engine::GetApp()
 	return s_pInstance;
 }
 
-void Engine::Initialize(const std::shared_ptr<Win32App> window) 
+void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath)
 {
 	BuildDeviceAndSwapChain(window);
 	BuildCommandObjects();
 	BuildDescriptorHeaps();
 	BuildRenderTargetViews();
-
-	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	ZeroMemory(&rootSignatureDesc, sizeof(CD3DX12_ROOT_SIGNATURE_DESC));
-
-	rootSignatureDesc.Init(0, 0, 0, 0, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	ID3DBlob* signatureBlob;
-	ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, nullptr));
-
-	ThrowIfFailed(m_device->CreateRootSignature(
-		0,
-		signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(),
-		IID_PPV_ARGS(m_rootSignature.GetAddressOf()	
-	)));
+	BuildConstantBufferViews();
+	BuildRootSignature();
+	
 	ID3DBlob* vs, *ps;
 
-	ThrowIfFailed(D3DCompileFromFile(L"VS.hlsl", 0, 0, "VSMain", "vs_4_0", 0, 0, &vs, 0));
-	ThrowIfFailed(D3DCompileFromFile(L"PS.hlsl", 0, 0, "PSMain", "ps_4_0", 0, 0, &ps, 0));
+	ThrowIfFailed(D3DCompileFromFile(vsPath, 0, 0, "VSMain", "vs_4_0", 0, 0, &vs, 0));
+	ThrowIfFailed(D3DCompileFromFile(psPath, 0, 0, "PSMain", "ps_4_0", 0, 0, &ps, 0));
 
 	D3D12_INPUT_ELEMENT_DESC inputLayout[1] = 
 	{
@@ -119,6 +107,7 @@ void Engine::Draw()
 	m_commandList->RSSetViewports(1, &m_viewPort);
 	m_commandList->RSSetScissorRects(1, &m_scissorsRect);
 
+	m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResource->GetGPUVirtualAddress());
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	
@@ -133,4 +122,68 @@ void Engine::Draw()
 void Engine::SwapBuffers() const
 {
 	ThrowIfFailed(m_dxgiSwapChain1->Present(1, 0));
+}
+
+void Engine::BuildDescriptorHeaps()
+{
+	// Render Target View
+	D3D12_DESCRIPTOR_HEAP_DESC rtvDescHeapDesc;
+	ZeroMemory(&rtvDescHeapDesc, sizeof(D3D12_DESCRIPTOR_HEAP_DESC));
+
+	rtvDescHeapDesc.NumDescriptors = m_iNumBuffers;
+	rtvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvDescHeapDesc, IID_PPV_ARGS(m_rtvDescriptorHeap.GetAddressOf())));
+}
+
+void Engine::BuildConstantBufferViews()
+{
+	m_constantBuffer = std::make_unique<ConstantBuffer>();
+	m_constantBuffer->Color = { 1.0f, 0.0f, 1.0f, 1.0f };
+
+	const UINT cBufferSize = sizeof(ConstantBuffer);
+	UINT AlignedBufferSize = 0U;
+		
+	// What's happening here? 
+	// We have to determine an allligned size for our constant buffer where our constant buffer is a multiple of 256 bytes.
+	// Remember that ALL constant buffers have to be a multiple of 256 bytes. No more AND No less!!!
+	for (UINT i = 0; i < (UINT)std::ceil((float)cBufferSize / 256U); i++)
+		if (cBufferSize > 256U * i)
+			AlignedBufferSize += 256U;
+
+	ThrowIfFailed(m_device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(AlignedBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(m_cbvResource.GetAddressOf())
+	));
+
+	void* data;
+	m_cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&data));
+	CopyMemory(data, m_constantBuffer.get(), cBufferSize);
+	m_cbvResource->Unmap(0, nullptr);
+}
+
+void Engine::BuildRootSignature()
+{
+	CD3DX12_ROOT_PARAMETER slotParameters[1];
+
+	slotParameters[0].InitAsConstantBufferView(0);
+
+	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+	ZeroMemory(&rootSignatureDesc, sizeof(CD3DX12_ROOT_SIGNATURE_DESC));
+
+	rootSignatureDesc.Init(_countof(slotParameters), slotParameters, 0, 0, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	ID3DBlob* signatureBlob;
+	ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, nullptr));
+
+	ThrowIfFailed(m_device->CreateRootSignature(
+		0,
+		signatureBlob->GetBufferPointer(),
+		signatureBlob->GetBufferSize(),
+		IID_PPV_ARGS(m_rootSignature.GetAddressOf()
+		)));
 }

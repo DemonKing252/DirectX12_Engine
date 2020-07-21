@@ -19,7 +19,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (!win32App->Initialize(hInstance, lpCmdShow, 100, 100, 800, 600))
 		return -1;
 
-	D3D12App::GetApp()->Initialize(win32App);
+	D3D12App::GetApp()->Initialize(win32App, L"VS.hlsl", L"PS.hlsl");
 
 	while (!win32App->QuitMessagePosted())
 	{

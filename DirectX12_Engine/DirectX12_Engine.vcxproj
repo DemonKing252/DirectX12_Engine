@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="D3DApp.cpp" />
+    <ClCompile Include="D3DCommon.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Vertex.cpp" />
@@ -152,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3DApp.h" />
+    <ClInclude Include="D3DCommon.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="Engine.h" />

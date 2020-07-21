@@ -1,8 +1,7 @@
 #pragma once
 #include "D3DApp.h"
-#include <DirectXColors.h>
-#include <DirectXMath.h>
 #include "Vertex.h"
+#include "D3DCommon.h"
 /* Engine takes care of our game (example: ImGui etc) */
 /* D3DApp takes care of setting up D3D */
 
@@ -17,13 +16,20 @@ public:
 	~Engine();
 	static Engine* GetApp();
 	
-	void Initialize(const std::shared_ptr<Win32App> window) override;
+	void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath) override;
 	void Update() override;
 	void Draw() override;
 	void SwapBuffers() const;
 
+	void BuildDescriptorHeaps();	// Used for RTV
+	void BuildConstantBufferViews();
+	void BuildRootSignature();
+
 private:
+	std::unique_ptr<ConstantBuffer> m_constantBuffer;
+
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+	Microsoft::WRL::ComPtr<ID3D12Resource> m_cbvResource;
 	
 	ID3D12Resource* m_vertexBuffer;
 	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;

@@ -6,6 +6,8 @@
 #include <memory>
 #include <wrl.h>
 #include "d3dx12.h"
+#include <DirectXColors.h>
+#include <DirectXMath.h>
 class Win32App;
 
 #pragma comment(lib, "d3d12.lib")
@@ -52,14 +54,13 @@ public:
 	D3DApp(const D3DApp& rhs) = delete;
 	void operator=(const D3DApp& rhs) = delete;
 
-	virtual void Initialize(const std::shared_ptr<Win32App> window);
+	virtual void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath);
 	virtual void Update();
 	virtual void Draw();
 	
 	void NewFrame();			// Reset the command list and command allocator for a new frame
 	void BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window);
 	void BuildCommandObjects();		
-	void BuildDescriptorHeaps();	// Used for RTV
 	void BuildRenderTargetViews();	// For each frame
 	void WaitForPreviousFrame();		// Sync the CPU and GPU
 };
