@@ -20,6 +20,7 @@ public:
 	void Initialize(const std::shared_ptr<Win32App> window) override;
 	void Update() override;
 	void Draw() override;
+	void SwapBuffers() const;
 
 private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
@@ -31,4 +32,3 @@ private:
 	static Engine* s_pInstance;
 
 } Engine, D3D12Engine, D3D12App;
-

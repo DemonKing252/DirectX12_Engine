@@ -20,13 +20,13 @@ void D3DApp::Draw()
 {
 }
 
-void D3DApp::PrepareNewFrame()
+void D3DApp::NewFrame()
 {
 	m_commandAllocator->Reset();
 	m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get());
 }
 
-void D3DApp::BuildDeviceAndSwapChain(const HWND hwnd)
+void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 {
 	ZeroMemory(m_debugController.GetAddressOf(), sizeof(ID3D12Debug));
 
@@ -64,13 +64,22 @@ void D3DApp::BuildDeviceAndSwapChain(const HWND hwnd)
 
 	ThrowIfFailed(m_dxgiFactory2->CreateSwapChainForHwnd(
 		m_commandQueue.Get(),
-		hwnd,
+		window->Get(),
 		&scd,
 		nullptr,
 		nullptr,
 		m_dxgiSwapChain1.GetAddressOf()
 	));
 
+	m_viewPort.TopLeftX = 0;
+	m_viewPort.TopLeftY = 0;
+	m_viewPort.Width = window->GetDimensions().right;
+	m_viewPort.Height = window->GetDimensions().bottom;
+
+	m_scissorsRect.top = 0;
+	m_scissorsRect.left = 0;
+	m_scissorsRect.right = window->GetDimensions().right;
+	m_scissorsRect.bottom = window->GetDimensions().bottom;
 }
 
 void D3DApp::BuildCommandObjects()
@@ -104,7 +113,7 @@ void D3DApp::BuildRenderTargetViews()
 {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	const UINT rtvSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
+	
 	for (UINT frame = 0; frame < m_iNumBuffers; frame++)
 	{
 		ID3D12Resource* pBackBuffer;
@@ -120,7 +129,7 @@ void D3DApp::BuildRenderTargetViews()
 	}
 }
 
-void D3DApp::FlushCommandQueue()
+void D3DApp::WaitForPreviousFrame()
 {
 	m_commandQueue->Signal(m_fence.Get(), m_iCurrentFence);
 

@@ -44,6 +44,8 @@ bool Win32App::Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT 
 		WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
 		x, y, w, h, nullptr, nullptr, hInstance, nullptr);
 	
+	m_windowDimensions = { x, y, w, h };
+
 	ShowWindow(m_hwnd, lpCmdShow);	
 	return true;
 }
@@ -62,6 +64,16 @@ void Win32App::DispatchMessages()
 HWND Win32App::Get() const
 {
 	return m_hwnd;
+}
+
+RECT Win32App::GetDimensions() const
+{
+	return m_windowDimensions;
+}
+
+void Win32App::SetDimensions(RECT rect)
+{
+	this->m_windowDimensions = rect;
 }
 
 bool Win32App::QuitMessagePosted() const

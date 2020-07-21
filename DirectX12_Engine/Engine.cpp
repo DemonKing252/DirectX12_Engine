@@ -22,7 +22,7 @@ Engine * Engine::GetApp()
 
 void Engine::Initialize(const std::shared_ptr<Win32App> window) 
 {
-	BuildDeviceAndSwapChain(window->Get());
+	BuildDeviceAndSwapChain(window);
 	BuildCommandObjects();
 	BuildDescriptorHeaps();
 	BuildRenderTargetViews();
@@ -97,28 +97,18 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window)
 	m_vertexBufferView.SizeInBytes = vBufferSize;
 	m_vertexBufferView.StrideInBytes = sizeof(Vertex);
 
-	// Fix this hard coding:
-	m_viewPort.TopLeftX = 0;
-	m_viewPort.TopLeftY = 0;
-	m_viewPort.Width = 800;
-	m_viewPort.Height = 600;
-
-	m_scissorsRect.top = 0;
-	m_scissorsRect.left = 0;
-	m_scissorsRect.right = 800;
-	m_scissorsRect.bottom = 600;
-
+	// View port and scissors rect is in d3dApp since I need the window dimensions.
 }
 
 void Engine::Update()
 {
+	// { 0, 1, 2, 0, 1, 2, ... }
+	// Next buffer
 	m_iBufferIndex = (m_iBufferIndex + 1) % m_iNumBuffers;
 }
 
 void Engine::Draw()
 {
-	PrepareNewFrame();
-
 	CD3DX12_CPU_DESCRIPTOR_HANDLE currentRTVHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	currentRTVHandle.Offset(1, m_iBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
@@ -138,8 +128,9 @@ void Engine::Draw()
 
 	ID3D12CommandList* cmdLists[] = { m_commandList.Get() };
 	m_commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+}
 
-	m_dxgiSwapChain1->Present(1, 0);
-
-	FlushCommandQueue();
+void Engine::SwapBuffers() const
+{
+	ThrowIfFailed(m_dxgiSwapChain1->Present(1, 0));
 }

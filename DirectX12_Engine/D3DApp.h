@@ -56,11 +56,11 @@ public:
 	virtual void Update();
 	virtual void Draw();
 	
-	void PrepareNewFrame();			// Reset the command list and command allocator for a new frame
-	void BuildDeviceAndSwapChain(const HWND hwnd);
+	void NewFrame();			// Reset the command list and command allocator for a new frame
+	void BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window);
 	void BuildCommandObjects();		
 	void BuildDescriptorHeaps();	// Used for RTV
 	void BuildRenderTargetViews();	// For each frame
-	void FlushCommandQueue();		// Sync the CPU and GPU
+	void WaitForPreviousFrame();		// Sync the CPU and GPU
 };
 

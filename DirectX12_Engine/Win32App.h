@@ -10,7 +10,8 @@ private:
 
 	LPCWSTR m_windowName;
 	LPCWSTR m_windowClassName;
-	
+	RECT m_windowDimensions;
+
 	bool m_bQuitMessagePosted;
 public:
 	Win32App(LPCWSTR windowName, LPCWSTR windowClass);
@@ -22,6 +23,8 @@ public:
 
 	HWND Get() const;
 
+	RECT GetDimensions() const;
+	void SetDimensions(RECT rect);
+
 	bool QuitMessagePosted() const;
 };
-
