@@ -8,4 +8,3 @@ public:
 	DirectX::XMMATRIX View;
 	DirectX::XMMATRIX Projection;
 };
-

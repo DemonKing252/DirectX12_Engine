@@ -69,7 +69,21 @@ inline void IndexBufferComponent<T>::Initialize(ID3D12Device * device, T * data,
 
 	m_indexBufferView.BufferLocation = m_buffer->GetGPUVirtualAddress();
 	m_indexBufferView.SizeInBytes = m_uSize;
-	m_indexBufferView.Format = DXGI_FORMAT_R16_UINT;
+
+	DXGI_FORMAT format;
+	switch (sizeof(T))
+	{
+	case 1:
+		format = DXGI_FORMAT_R8_UINT;
+		break;
+	case 2:
+		format = DXGI_FORMAT_R16_UINT;
+		break;
+	case 4:
+		format = DXGI_FORMAT_R32_UINT;
+		break;
+	}
+	m_indexBufferView.Format = format;
 }
 
 template<class T>

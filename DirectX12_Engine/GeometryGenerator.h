@@ -4,8 +4,8 @@ class GeometryGenerator
 {
 public:
 	// Example 
-	MeshGeometry* CreateTriangle(ID3D12Device* device);
+	std::shared_ptr<MeshGeometry> CreateTriangle(ID3D12Device* device);
 
-	MeshGeometry* CreateBox(ID3D12Device * device, float width, float height, float depth);
-	MeshGeometry* CreateGrid(ID3D12Device * device, float width, float depth);
+	std::shared_ptr<MeshGeometry> CreateBox(ID3D12Device * device, float width, float height, float depth);
+	std::shared_ptr<MeshGeometry> CreateGrid(ID3D12Device * device, float width, float depth);
 };

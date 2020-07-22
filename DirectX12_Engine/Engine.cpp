@@ -28,40 +28,18 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	BuildRenderTargetViews();
 	BuildConstantBufferViews();
 	BuildRootSignature();
-
-	ID3DBlob* vs, *ps;
-
-	ThrowIfFailed(D3DCompileFromFile(vsPath, 0, 0, "VSMain", "vs_4_0", 0, 0, &vs, 0));
-	ThrowIfFailed(D3DCompileFromFile(psPath, 0, 0, "PSMain", "ps_4_0", 0, 0, &ps, 0));
-
-	D3D12_INPUT_ELEMENT_DESC inputLayout[3] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
-	};
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
-	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs);
-	psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps);
-	psoDesc.SampleDesc.Count = 1;
-	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.DepthStencilState.DepthEnable = false;
-	psoDesc.DepthStencilState.StencilEnable = false;
-	psoDesc.InputLayout = { inputLayout, _countof(inputLayout) };
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.pRootSignature = m_rootSignature.Get();
-
-	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(m_pipelineState.GetAddressOf())));
+	AssemblePipeline(vsPath, psPath);
 
 	GeometryGenerator geoGen;
-	m_triangleMesh = geoGen.CreateBox(m_device.Get(), 1.0f, 1.0f, 1.0f);
+
+	m_boxMesh = geoGen.CreateBox(m_device.Get(), 1.0f, 1.0f, 1.0f);
+
+	DirectX::XMMATRIX model;
+	model = DirectX::XMMatrixIdentity();
+
+	m_boxMesh->AddComponent<TransformComponent>();
+	m_boxMesh->GetComponent<TransformComponent>().SetModelMatrix(model);
+
 
 	// View port and scissors rect is in d3dApp since I need the window dimensions.
 }
@@ -72,23 +50,23 @@ void Engine::Update()
 	// Next buffer
 	m_iBufferIndex = (m_iBufferIndex + 1) % m_iNumBuffers;
 
-	DirectX::XMFLOAT4 Eye = 
-	{ 
-		2.0f * cos(static_cast<float>(DirectX::XMConvertToRadians(m_iCurrentFence))), 
-		2.0f, 
-		2.0f * sin(static_cast<float>(DirectX::XMConvertToRadians(m_iCurrentFence))),
-		1.0f
-	};
+	DirectX::XMMATRIX model;
+	model = DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(m_iCurrentFence)) *
+		DirectX::XMMatrixTranslation(cos(static_cast<float>(DirectX::XMConvertToRadians(m_iCurrentFence))), 0.0f, 0.0f);
+	
+	m_boxMesh->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+	DirectX::XMFLOAT4 Eye = { 0.0f, 3.0f, 3.0f, 1.0f };
 	DirectX::XMFLOAT4 Focus = { 0.0f, 0.0f, 0.0f, 1.0f };
 	DirectX::XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 1.0f };
 
+	m_constantBuffer->Model = m_boxMesh->GetComponent<TransformComponent>().GetModelMatrix();
 	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
 	(
 		DirectX::XMLoadFloat4(&Eye),
 		DirectX::XMLoadFloat4(&Focus),
 		DirectX::XMLoadFloat4(&Up)
 	);
-
 	m_constantBuffer->World = DirectX::XMMatrixTranspose
 	(
 		m_constantBuffer->Model *
@@ -107,8 +85,13 @@ void Engine::Draw()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE currentRTVHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	currentRTVHandle.Offset(1, m_iBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
+	// Indicate that the back buffer will be used as a render target (according to Hooman's slides)
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
 	m_commandList->OMSetRenderTargets(1, &currentRTVHandle, false, nullptr);
-	m_commandList->ClearRenderTargetView(currentRTVHandle, DirectX::Colors::DarkCyan, 0, nullptr);
+
+	float ClearColor[] = { 0.0f, 0.0f, 0.3f, 1.0f };
+	m_commandList->ClearRenderTargetView(currentRTVHandle, ClearColor, 0, nullptr);
 
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 	m_commandList->RSSetViewports(1, &m_viewPort);
@@ -117,10 +100,13 @@ void Engine::Draw()
 	m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResource->GetGPUVirtualAddress());
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
-	m_commandList->IASetVertexBuffers(0, 1, &m_triangleMesh->GetComponent<VertexBufferComponent<Vertex>>().Get());
-	m_commandList->IASetIndexBuffer(&m_triangleMesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+	m_commandList->IASetVertexBuffers(0, 1, &m_boxMesh->GetComponent<VertexBufferComponent<Vertex>>().Get());
+	m_commandList->IASetIndexBuffer(&m_boxMesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
 
-	m_commandList->DrawIndexedInstanced(m_triangleMesh->IndexCount, 1, 0, 0, 0);
+	m_commandList->DrawIndexedInstanced(m_boxMesh->IndexCount, 1, 0, 0, 0);
+
+	// Indicate that the back buffer will be used to present (according to Hooman's slides)
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	m_commandList->Close();
 
@@ -131,6 +117,12 @@ void Engine::Draw()
 void Engine::SwapBuffers() const
 {
 	ThrowIfFailed(m_dxgiSwapChain1->Present(1, 0));
+}
+
+void Engine::Clean()
+{
+	WaitForPreviousFrame();
+	CloseHandle(m_fenceEvent);
 }
 
 void Engine::BuildDescriptorHeaps()
@@ -216,4 +208,38 @@ void Engine::BuildRootSignature()
 		signatureBlob->GetBufferSize(),
 		IID_PPV_ARGS(m_rootSignature.GetAddressOf()
 		)));
+}
+
+void Engine::AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath)
+{
+	ID3DBlob* vs, *ps;
+
+	ThrowIfFailed(D3DCompileFromFile(vsPath, 0, 0, "VSMain", "vs_4_0", 0, 0, &vs, 0));
+	ThrowIfFailed(D3DCompileFromFile(psPath, 0, 0, "PSMain", "ps_4_0", 0, 0, &ps, 0));
+
+	D3D12_INPUT_ELEMENT_DESC inputLayout[3] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+	};
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
+	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs);
+	psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps);
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.DepthStencilState.DepthEnable = false;
+	psoDesc.DepthStencilState.StencilEnable = false;
+	psoDesc.InputLayout = { inputLayout, _countof(inputLayout) };
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.pRootSignature = m_rootSignature.Get();
+
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(m_pipelineState.GetAddressOf())));
 }

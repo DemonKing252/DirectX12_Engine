@@ -20,6 +20,10 @@ void D3DApp::Draw()
 {
 }
 
+void D3DApp::Clean()
+{
+}
+
 void D3DApp::NewFrame()
 {
 	m_commandAllocator->Reset();
@@ -93,6 +97,8 @@ void D3DApp::BuildCommandObjects()
 		nullptr,
 		IID_PPV_ARGS(m_commandList.GetAddressOf())
 	));
+	// d3d doc states that this should be closed before the main loop
+	m_commandList->Close();
 
 	ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_fence.GetAddressOf())));
 	m_fenceEvent = CreateEvent(0, 0, 0, 0);
@@ -105,11 +111,10 @@ void D3DApp::BuildRenderTargetViews()
 	
 	for (UINT frame = 0; frame < m_iNumBuffers; frame++)
 	{
-		ID3D12Resource* pBackBuffer;
-		m_dxgiSwapChain1->GetBuffer(frame, IID_PPV_ARGS(&pBackBuffer));
-
+		m_dxgiSwapChain1->GetBuffer(frame, IID_PPV_ARGS(m_renderTargets[frame].GetAddressOf()));
+		 
 		m_device->CreateRenderTargetView(
-			pBackBuffer,
+			m_renderTargets[frame].Get(),
 			nullptr,
 			rtvHandle
 		);

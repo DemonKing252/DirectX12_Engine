@@ -151,6 +151,7 @@
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="SubMeshGeometry.cpp" />
+    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="Win32App.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="SubMeshGeometry.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="Win32App.h" />

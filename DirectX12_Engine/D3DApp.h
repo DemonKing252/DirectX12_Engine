@@ -31,7 +31,8 @@ private:
 
 	HWND m_win32Wnd;
 protected:
-	const int m_iNumBuffers = 3;
+	// Too my discovery if a variable is to be used to define an array size in a class, it must be static!
+	static const UINT m_iNumBuffers = 3;
 	UINT m_iBufferIndex = m_iNumBuffers - 1;
 
 	UINT64 m_iCurrentFence;
@@ -43,6 +44,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device;
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> m_dxgiSwapChain1;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
+	Microsoft::WRL::ComPtr<ID3D12Resource> m_renderTargets[m_iNumBuffers];
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvDescriptorHeap;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
@@ -57,6 +59,7 @@ public:
 	virtual void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath);
 	virtual void Update();
 	virtual void Draw();
+	virtual void Clean();
 	
 	void NewFrame();			// Reset the command list and command allocator for a new frame
 	void BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window);
@@ -64,4 +67,3 @@ public:
 	void BuildRenderTargetViews();	// For each frame
 	void WaitForPreviousFrame();		// Sync the CPU and GPU
 };
-

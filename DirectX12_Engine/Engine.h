@@ -6,6 +6,7 @@
 #include "IndexBuffer.h"
 #include "SubMeshGeometry.h"
 #include "GeometryGenerator.h"
+#include "Transform.h"
 #include <cmath>
 /* Engine takes care of our game (example: ImGui etc) */
 /* D3DApp takes care of setting up D3D */
@@ -15,7 +16,7 @@ typedef class Engine : public D3DApp
 {
 public:
 	Engine(const Engine& rhs) = delete;
-	void operator=(Engine& rhs) = delete;
+	void operator=(const Engine& rhs) = delete;
 
 	Engine();
 	~Engine();
@@ -25,21 +26,19 @@ public:
 	void Update() override;
 	void Draw() override;
 	void SwapBuffers() const;
+	void Clean() override;
 
 	void BuildDescriptorHeaps();	// Used for RTV
 	void BuildConstantBufferViews();
 	void BuildRootSignature();
+	void AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath);
 
 private:
 	std::unique_ptr<ConstantBuffer> m_constantBuffer;
+	std::shared_ptr<MeshGeometry> m_boxMesh;
 	
-	MeshGeometry* m_triangleMesh;
-	//std::unique_ptr<VertexBufferComponent<Vertex>> m_vertexBuffer;
-	//std::unique_ptr<IndexBufferComponent<std::uint16_t>> m_indexBuffer;
-
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_cbvResource;
-	
 
 	static Engine* s_pInstance;
 

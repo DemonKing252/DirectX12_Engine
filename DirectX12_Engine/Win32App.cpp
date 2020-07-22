@@ -1,5 +1,5 @@
 #include "Win32App.h"
-
+#include "Engine.h"
 LRESULT CALLBACK WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg )
@@ -33,6 +33,7 @@ Win32App::~Win32App()
 
 bool Win32App::Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT w, INT h)
 {
+	this->m_hInstance = hInstance;
 	this->m_windowClass.lpszClassName = m_windowClassName;
 	this->m_windowClass.hInstance = hInstance;
 	this->m_windowClass.lpfnWndProc = WinProc;
@@ -52,6 +53,12 @@ bool Win32App::Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT 
 	return true;
 }
 
+void Win32App::Clean()
+{
+	UnregisterClass(m_windowClassName, m_hInstance);
+	DestroyWindow(m_hwnd);
+}
+
 void Win32App::DispatchMessages()
 {
 	while (PeekMessage(&m_msg, 0, 0, 0, PM_REMOVE))
@@ -59,7 +66,12 @@ void Win32App::DispatchMessages()
 		TranslateMessage(&m_msg);
 		DispatchMessage(&m_msg);
 
-		if (m_msg.message == WM_QUIT) { m_bQuitMessagePosted = true; }
+		if (m_msg.message == WM_QUIT) { 
+			m_bQuitMessagePosted = true; 
+		
+			this->Clean();
+			D3D12App::GetApp()->Clean();
+		}
 	}
 }
 

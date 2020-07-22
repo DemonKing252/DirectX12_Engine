@@ -11,6 +11,7 @@ private:
 	LPCWSTR m_windowName;
 	LPCWSTR m_windowClassName;
 	RECT m_windowDimensions;
+	HINSTANCE m_hInstance;
 
 	bool m_bQuitMessagePosted;
 public:
@@ -19,6 +20,8 @@ public:
 	~Win32App();
 
 	bool Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT w, INT h);
+	void Clean();
+
 	void DispatchMessages();
 
 	HWND Get() const;

@@ -5,8 +5,8 @@
 DirectX12_Engine::D3DMain.cpp by Liam Blake (C) 2020 All Rights Reserved.
 
 Created: 2020-07-20
-Modified: 2020-05-20
-Lines of code: 607
+Modified: 2020-07-22
+Lines of code: 1272
 
 *********************************************************************************/
 
@@ -17,30 +17,32 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	win32App = std::make_shared<Win32App>(L"D3D12 Engine", L"hw3d");
 
 	if (!win32App->Initialize(hInstance, lpCmdShow, 100, 100, 800, 600))
-		return -1;
-
-	D3D12App::GetApp()->Initialize(win32App, L"VS.hlsl", L"PS.hlsl");
-
-	while (!win32App->QuitMessagePosted())
 	{
-		// Process window events
-		win32App->DispatchMessages();
-
-		// Reset the command objects for a new frame
-		D3D12App::GetApp()->NewFrame();
-
-		// Update
-		D3D12App::GetApp()->Update();
-
-		// Draw
-		D3D12App::GetApp()->Draw();
-		
-		// Swap the front and back buffers
-		D3D12App::GetApp()->SwapBuffers();
-
-		// Sync the CPU/GPU to prevent screen tearing/flickering
-		D3D12App::GetApp()->WaitForPreviousFrame();
+		MessageBox(0, L"HWND Register Failed!", L"HWND Error!", 0);
 	}
+	else
+	{
+		D3D12App::GetApp()->Initialize(win32App, L"VS.hlsl", L"PS.hlsl");
+		while (!win32App->QuitMessagePosted())
+		{
+			// Process window events
+			win32App->DispatchMessages();
 
+			// Reset the command objects for a new frame
+			D3D12App::GetApp()->NewFrame();
+
+			// Update
+			D3D12App::GetApp()->Update();
+
+			// Draw
+			D3D12App::GetApp()->Draw();
+
+			// Swap the front and back buffers
+			D3D12App::GetApp()->SwapBuffers();
+
+			// Sync the CPU/GPU to prevent screen tearing/flickering
+			D3D12App::GetApp()->WaitForPreviousFrame();
+		}
+	}
 	return 0;
 }

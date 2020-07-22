@@ -1,8 +1,8 @@
 #include "GeometryGenerator.h"
 
-MeshGeometry * GeometryGenerator::CreateTriangle(ID3D12Device * device)
+std::shared_ptr<MeshGeometry> GeometryGenerator::CreateTriangle(ID3D12Device * device)
 {
-	MeshGeometry* mesh = new MeshGeometry();
+	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
 
 
 	Vertex vertices[3] =
@@ -27,9 +27,9 @@ MeshGeometry * GeometryGenerator::CreateTriangle(ID3D12Device * device)
 	return mesh;
 }
 
-MeshGeometry* GeometryGenerator::CreateBox(ID3D12Device * device, float width, float height, float depth)
+std::shared_ptr<MeshGeometry> GeometryGenerator::CreateBox(ID3D12Device * device, float width, float height, float depth)
 {
-	MeshGeometry* mesh = new MeshGeometry();
+	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
 
 
 	Vertex vertices[] =
@@ -105,10 +105,9 @@ MeshGeometry* GeometryGenerator::CreateBox(ID3D12Device * device, float width, f
 	return mesh;
 }
 
-MeshGeometry* GeometryGenerator::CreateGrid(ID3D12Device * device, float width, float depth)
+std::shared_ptr<MeshGeometry> GeometryGenerator::CreateGrid(ID3D12Device * device, float width, float depth)
 {
-	MeshGeometry* mesh = new MeshGeometry();
-
+	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
 
 	Vertex vertices[] =
 	{
