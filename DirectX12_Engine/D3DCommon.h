@@ -3,6 +3,9 @@
 class ConstantBuffer
 {
 public:
-	DirectX::XMFLOAT4 Color;
+	DirectX::XMMATRIX World;
+	DirectX::XMMATRIX Model;
+	DirectX::XMMATRIX View;
+	DirectX::XMMATRIX Projection;
 };
 

@@ -2,6 +2,11 @@
 #include "D3DApp.h"
 #include "Vertex.h"
 #include "D3DCommon.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "SubMeshGeometry.h"
+#include "GeometryGenerator.h"
+#include <cmath>
 /* Engine takes care of our game (example: ImGui etc) */
 /* D3DApp takes care of setting up D3D */
 
@@ -27,12 +32,13 @@ public:
 
 private:
 	std::unique_ptr<ConstantBuffer> m_constantBuffer;
+	
+	MeshGeometry* m_triangleMesh;
+	//std::unique_ptr<VertexBufferComponent<Vertex>> m_vertexBuffer;
+	//std::unique_ptr<IndexBufferComponent<std::uint16_t>> m_indexBuffer;
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_cbvResource;
-	
-	ID3D12Resource* m_vertexBuffer;
-	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 	
 
 	static Engine* s_pInstance;

@@ -28,20 +28,22 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	BuildRenderTargetViews();
 	BuildConstantBufferViews();
 	BuildRootSignature();
-	
+
 	ID3DBlob* vs, *ps;
 
 	ThrowIfFailed(D3DCompileFromFile(vsPath, 0, 0, "VSMain", "vs_4_0", 0, 0, &vs, 0));
 	ThrowIfFailed(D3DCompileFromFile(psPath, 0, 0, "PSMain", "ps_4_0", 0, 0, &ps, 0));
 
-	D3D12_INPUT_ELEMENT_DESC inputLayout[1] = 
+	D3D12_INPUT_ELEMENT_DESC inputLayout[3] =
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 	};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
 	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	
+
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs);
@@ -58,32 +60,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 
 	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(m_pipelineState.GetAddressOf())));
 
-	Vertex vertices[3] = 
-	{
-		Vertex(DirectX::XMFLOAT3(-0.5f, -0.5f, +0.0f)),
-		Vertex(DirectX::XMFLOAT3(+0.0f, +0.5f, +0.0f)),
-		Vertex(DirectX::XMFLOAT3(+0.5f, -0.5f, +0.0f)),
-	};
-	const UINT vBufferSize = sizeof(vertices);
-
-	ThrowIfFailed(m_device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&m_vertexBuffer)
-	));
-
-	void* data;
-	CD3DX12_RANGE readRange(0, 0);
-	m_vertexBuffer->Map(0, &readRange, reinterpret_cast<LPVOID*>(&data));
-	CopyMemory(data, vertices, vBufferSize);
-	m_vertexBuffer->Unmap(0, 0);
-
-	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
-	m_vertexBufferView.SizeInBytes = vBufferSize;
-	m_vertexBufferView.StrideInBytes = sizeof(Vertex);
+	GeometryGenerator geoGen;
+	m_triangleMesh = geoGen.CreateBox(m_device.Get(), 1.0f, 1.0f, 1.0f);
 
 	// View port and scissors rect is in d3dApp since I need the window dimensions.
 }
@@ -93,6 +71,35 @@ void Engine::Update()
 	// { 0, 1, 2, 0, 1, 2, ... }
 	// Next buffer
 	m_iBufferIndex = (m_iBufferIndex + 1) % m_iNumBuffers;
+
+	DirectX::XMFLOAT4 Eye = 
+	{ 
+		2.0f * cos(static_cast<float>(DirectX::XMConvertToRadians(m_iCurrentFence))), 
+		2.0f, 
+		2.0f * sin(static_cast<float>(DirectX::XMConvertToRadians(m_iCurrentFence))),
+		1.0f
+	};
+	DirectX::XMFLOAT4 Focus = { 0.0f, 0.0f, 0.0f, 1.0f };
+	DirectX::XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 1.0f };
+
+	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
+	(
+		DirectX::XMLoadFloat4(&Eye),
+		DirectX::XMLoadFloat4(&Focus),
+		DirectX::XMLoadFloat4(&Up)
+	);
+
+	m_constantBuffer->World = DirectX::XMMatrixTranspose
+	(
+		m_constantBuffer->Model *
+		m_constantBuffer->View *
+		m_constantBuffer->Projection
+	);
+
+	void* data;
+	m_cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&data));
+	CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
+	m_cbvResource->Unmap(0, nullptr);
 }
 
 void Engine::Draw()
@@ -109,9 +116,11 @@ void Engine::Draw()
 
 	m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResource->GetGPUVirtualAddress());
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	
-	m_commandList->DrawInstanced(3, 1, 0, 0);
+	m_commandList->IASetVertexBuffers(0, 1, &m_triangleMesh->GetComponent<VertexBufferComponent<Vertex>>().Get());
+	m_commandList->IASetIndexBuffer(&m_triangleMesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+
+	m_commandList->DrawIndexedInstanced(m_triangleMesh->IndexCount, 1, 0, 0, 0);
 
 	m_commandList->Close();
 
@@ -139,7 +148,28 @@ void Engine::BuildDescriptorHeaps()
 void Engine::BuildConstantBufferViews()
 {
 	m_constantBuffer = std::make_unique<ConstantBuffer>();
-	m_constantBuffer->Color = { 1.0f, 0.0f, 1.0f, 1.0f };
+	
+	m_constantBuffer->Model = DirectX::XMMatrixIdentity();
+	
+	DirectX::XMFLOAT4 Eye = { 2.0f, 2.0f, 2.0f, 1.0f };
+	DirectX::XMFLOAT4 Focus = { 0.0f, 0.0f, 0.0f, 1.0f };
+	DirectX::XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 1.0f };
+
+	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
+	(
+		DirectX::XMLoadFloat4(&Eye),
+		DirectX::XMLoadFloat4(&Focus),
+		DirectX::XMLoadFloat4(&Up)
+	);
+
+	m_constantBuffer->Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(45.0f), 4.0f / 3.0f, 0.1f, 300.0f);
+
+	m_constantBuffer->World = DirectX::XMMatrixTranspose
+	(
+		m_constantBuffer->Model * 
+		m_constantBuffer->View * 
+		m_constantBuffer->Projection
+	);
 
 	const UINT cBufferSize = sizeof(ConstantBuffer);
 	UINT AlignedBufferSize = 0U;

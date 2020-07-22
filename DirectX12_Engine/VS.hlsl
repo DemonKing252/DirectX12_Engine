@@ -1,9 +1,23 @@
 cbuffer ConstantBuffer : register(b0)
 {
-    float4 Color;
+    matrix World;
+    matrix Model;
+    matrix View;
+    matrix Projection;
 }
-
-float4 VSMain(float3 pos : POSITION) : SV_POSITION
+struct Layout
 {
-    return float4(pos, 1.0f);
+    float4 position : SV_POSITION;
+    float2 texCoord : TEXCOORD;
+    float3 normal : NORMAL;
+};
+
+Layout VSMain(float3 position : POSITION, float2 texCoord : TEXCOORD, float3 normal : NORMAL)
+{
+    Layout layout;
+    layout.position = mul(float4(position, 1.0f), World);
+    layout.texCoord = texCoord;
+    layout.normal = normal;
+    
+    return layout;
 }
