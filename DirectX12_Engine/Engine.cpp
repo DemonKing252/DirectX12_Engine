@@ -31,13 +31,30 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	AssemblePipeline(vsPath, psPath);
 
 	GeometryGenerator geoGen;
+	DirectX::XMFLOAT3 Positions[10] = 
+	{
+		{-1.0f, 0.5f, +0.0f },
+		{+1.0f, 0.5f, +0.0f },
+		{-1.0f, 0.5f, +1.0f },
+		{+1.0f, 0.5f, +1.0f },
+		{-1.0f, 0.5f, -1.0f },
+		{+1.0f, 0.5f, -1.0f },
+		{-1.0f, 0.5f, -2.0f },
+		{+1.0f, 0.5f, -2.0f },
+		{-1.0f, 0.5f, +2.0f },
+		{+1.0f, 0.5f, +2.0f },
+	};
+
+	for (UINT i = 0; i < _countof(Positions); i++)
 	{
 		m_meshes.push_back(std::make_shared<MeshGeometry>());
 		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
+
+		m_meshes.back()->AddComponent<MaterialComponent>();
+		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
 
 		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(1.0f, 0.5f, 0.0f);
+		model = DirectX::XMMatrixTranslation(Positions[i].x, Positions[i].y, Positions[i].z);
 
 		m_meshes.back()->AddComponent<TransformComponent>();
 		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
@@ -45,88 +62,32 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		ID3D12Resource* temp;
 		ZeroMemory(&temp, sizeof(ID3D12Resource));
 		m_cbvResources.push_back(temp);
-	}
-	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
 
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(-1.0f, 0.5f, 0.0f);
+		// ----------------------
+
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateSphere(m_device.Get(), 0.1f, 10, 20);
+
+		m_meshes.back()->AddComponent<MaterialComponent>(); 
+		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+		model = DirectX::XMMatrixTranslation(Positions[i].x, Positions[i].y+0.6f, Positions[i].z);
 
 		m_meshes.back()->AddComponent<TransformComponent>();
 		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
 
-		ID3D12Resource* temp;
-		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
-	}
-	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
-
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(1.0f, 0.5f, 1.0f);
-
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
-
-		ID3D12Resource* temp;
-		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
-	}
-	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
-
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(-1.0f, 0.5f, 1.0f);
-
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
-
-		ID3D12Resource* temp;
-		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
-	}
-	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
-
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(1.0f, 0.5f, -1.0f);
-
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
-
-		ID3D12Resource* temp;
-		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
-	}
-	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
-
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(-1.0f, 0.5f, -1.0f);
-
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
-
-		ID3D12Resource* temp;
-		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
+		ID3D12Resource* temp2;
+		ZeroMemory(&temp2, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp2);
 	}
 
 	{
 		m_meshes.push_back(std::make_shared<MeshGeometry>());
 		m_meshes.back() = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 0.0f, 1.0f };
-		
+
+		m_meshes.back()->AddComponent<MaterialComponent>();
+		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 0.0f, 0.5f, 0.0f, 1.0f };
+
 		DirectX::XMMATRIX model;
 		model = DirectX::XMMatrixTranslation(0.0f, 0.125f, 0.0f);
 	
@@ -141,10 +102,12 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	{
 		m_meshes.push_back(std::make_shared<MeshGeometry>());
 		m_meshes.back() = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f);
-		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.7f, 0.0f, 1.0f };
+
+		m_meshes.back()->AddComponent<MaterialComponent>(); 
+		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 0.0f, 0.7f, 0.0f, 1.0f };
 
 		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+		model = DirectX::XMMatrixTranslation(0.0f, -0.0001f, 0.0f);
 
 		m_meshes.back()->AddComponent<TransformComponent>();
 		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
@@ -190,7 +153,7 @@ void Engine::Draw()
 	for (int i = 0; i < (std::uint16_t)m_meshes.size(); i++)
 	{
 		m_constantBuffer->Model = m_meshes[i]->GetComponent<TransformComponent>().GetModelMatrix();
-		m_constantBuffer->DiffuseAlbedo = m_meshes[i]->DiffuseAlbedo;
+		m_constantBuffer->DiffuseAlbedo = m_meshes[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
 		this->UpdateConstants();
 
 		void* data;
@@ -225,11 +188,12 @@ void Engine::SwapBuffers() const
 void Engine::Clean()
 {
 	WaitForPreviousFrame();
-	CloseHandle(m_fenceEvent);
 }
 
 void Engine::UpdateConstants()
 {
+	Camera::UpdateEyePosition();
+
 	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
 	(
 		DirectX::XMLoadFloat4(&Camera::Eye),
@@ -340,7 +304,7 @@ void Engine::AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath)
 	D3D12_RASTERIZER_DESC rasDesc;
 	ZeroMemory(&rasDesc, sizeof(D3D12_RASTERIZER_DESC));
 	
-	rasDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	rasDesc.AntialiasedLineEnable = true;
 	rasDesc.MultisampleEnable = true;

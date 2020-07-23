@@ -67,11 +67,85 @@ void Win32App::DispatchMessages()
 		TranslateMessage(&m_msg);
 		DispatchMessage(&m_msg);
 
-		if (m_msg.message == WM_QUIT) { 
-			m_bQuitMessagePosted = true; 
-		
+		if (m_msg.message == WM_QUIT) {
+			m_bQuitMessagePosted = true;
+
 			this->Clean();
 			D3D12App::GetApp()->Clean();
+		}
+
+		if (m_msg.message == WM_LBUTTONDOWN)
+		{
+			m_bLeft = true;
+			m_MouseL.x = LOWORD(m_msg.lParam);
+			m_MouseL.y = HIWORD(m_msg.lParam);
+		}
+			
+		if (m_msg.message == WM_RBUTTONDOWN)
+		{
+			m_bRight = true;
+			m_MouseL.x = LOWORD(m_msg.lParam);
+			m_MouseL.y = HIWORD(m_msg.lParam);
+		}
+
+		if (m_msg.message == WM_LBUTTONUP)
+			m_bLeft = false;
+
+		if (m_msg.message == WM_RBUTTONUP)
+			m_bRight = false;
+
+		if (m_msg.message == WM_KEYDOWN)
+		{
+			switch(m_msg.wParam)
+			{
+			case 27:
+				m_bQuitMessagePosted = true;
+				this->Clean();
+				D3D12App::GetApp()->Clean();
+				break;
+
+			}
+		}
+	}
+
+	if (m_bLeft)
+	{
+		m_lastMouseL.x = m_MouseL.x;
+		m_lastMouseL.y = m_MouseL.y;
+
+		m_MouseL.x = LOWORD(m_msg.lParam);
+		m_MouseL.y = HIWORD(m_msg.lParam);
+
+		DirectX::XMFLOAT2 Delta;
+		Delta.x = 0.25f*(m_MouseL.x - m_lastMouseL.x);
+		Delta.y = 0.25f*(m_MouseL.y - m_lastMouseL.y);
+		
+		Camera::m_Yaw += Delta.x;
+		Camera::m_Pitch -= Delta.y;
+		Camera::UpdateEyePosition();
+	}
+	if (m_bRight)
+	{
+		m_lastMouseL.x = m_MouseL.x;
+		m_lastMouseL.y = m_MouseL.y;
+
+		m_MouseL.x = LOWORD(m_msg.lParam);
+		m_MouseL.y = HIWORD(m_msg.lParam);
+
+		DirectX::XMFLOAT2 Delta; 
+		
+		Delta.x = 0.25f*(m_MouseL.x - m_lastMouseL.x);
+		Delta.y = 0.25f*(m_MouseL.y - m_lastMouseL.y);
+
+		if (Delta.y < 0.0f && 0.25f*(Camera::m_Radius - Delta.y) > 1.0f)
+		{
+			Camera::m_Radius += Delta.y;
+			Camera::UpdateEyePosition();
+		}
+		else if (Delta.y > 0.0f && 0.25f*(Camera::m_Radius - Delta.y) <= 6.0f)
+		{
+			Camera::m_Radius += Delta.y;
+			Camera::UpdateEyePosition();
 		}
 	}
 }

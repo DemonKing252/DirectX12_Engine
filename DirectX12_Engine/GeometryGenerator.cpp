@@ -181,11 +181,11 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateCylinder(ID3D12Device * d
 		vertices[index + 1].SetNormal({ topRadius * cos_radians(angle), h, topRadius * sin_radians(angle) });
 		vertices[index + 1].SetUV({ 0.0f, 0.0f });
 	
-		vertices[index + 2].SetPosition({ topRadius * cos_radians(angle + stepOver), h, topRadius * sin_radians(angle + stepOver) });
-		vertices[index + 2].SetNormal({ topRadius * cos_radians(angle + stepOver), h, topRadius * sin_radians(angle + stepOver) });
+		vertices[index + 2].SetPosition({ topRadius * cos_radians(angle - stepOver), h, topRadius * sin_radians(angle - stepOver) });
+		vertices[index + 2].SetNormal({ topRadius * cos_radians(angle - stepOver), h, topRadius * sin_radians(angle - stepOver) });
 		vertices[index + 2].SetUV({ 0.0f, 0.0f });
 	
-		angle += stepOver;
+		angle -= stepOver;
 	}
 
 	DirectX::XMFLOAT3 Pos;
@@ -238,6 +238,89 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateCylinder(ID3D12Device * d
 
 	mesh->AddComponent<IndexBufferComponent<std::uint16_t>>();
 	mesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Initialize(device, indices, vertexCount);
+
+	return mesh;
+}
+
+std::shared_ptr<MeshGeometry> GeometryGenerator::CreateSphere(ID3D12Device * device, float radius, int sliceCount, int stackCount)
+{
+	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
+
+	const UINT vertexCount = (stackCount * sliceCount) * 6;
+	const UINT indexCount  = (stackCount * sliceCount) * 6;
+
+	Vertex* vertices = new Vertex[vertexCount];
+	std::uint16_t* indices = new std::uint16_t[indexCount];
+
+	DirectX::XMFLOAT3 Pos;
+
+	float stepOver = static_cast<float>(360.0f/sliceCount);
+	float stepDown = static_cast<float>(180.0f/stackCount);
+
+	float pitch = -90.0f;
+	float yaw = 0.0f;
+	
+	for (UINT i = 0; i < vertexCount; i+=6)
+	{
+		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch));
+		Pos.y = radius * (sin_radians(pitch));
+		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch));
+		vertices[i].SetPosition(Pos);
+		vertices[i].SetNormal(Pos);
+		vertices[i].SetUV({ 0.0f, 0.0 });
+	
+		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch));
+		Pos.y = radius * (sin_radians(pitch));
+		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch));
+		vertices[i + 1].SetPosition(Pos);
+		vertices[i + 1].SetNormal(Pos);
+		vertices[i + 1].SetUV({ 0.0f, 0.0 });
+	
+		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
+		Pos.y = radius * (sin_radians(pitch + stepDown));
+		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
+		vertices[i + 2].SetPosition(Pos);
+		vertices[i + 2].SetNormal(Pos);
+		vertices[i + 2].SetUV({ 0.0f, 0.0 });
+
+		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
+		Pos.y = radius * (sin_radians(pitch + stepDown));
+		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
+		vertices[i + 3].SetPosition(Pos);
+		vertices[i + 3].SetNormal(Pos);
+		vertices[i + 3].SetUV({ 0.0f, 0.0 });
+
+		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch + stepDown));
+		Pos.y = radius * (sin_radians(pitch + stepDown));
+		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch + stepDown));
+		vertices[i + 4].SetPosition(Pos);
+		vertices[i + 4].SetNormal(Pos);
+		vertices[i + 4].SetUV({ 0.0f, 0.0 });
+
+		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch));
+		Pos.y = radius * (sin_radians(pitch));
+		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch));
+		vertices[i + 5].SetPosition(Pos);
+		vertices[i + 5].SetNormal(Pos);
+		vertices[i + 5].SetUV({ 0.0f, 0.0 });
+	
+		yaw += stepOver;
+
+		if (yaw >= 0.0f && (int)yaw % 360 == 0) { pitch += stepDown; yaw = 0.0f; }
+	}
+
+
+	for (UINT i = 0; i < indexCount; i++)
+		indices[i] = i;
+
+	mesh->VertexCount = vertexCount;
+	mesh->IndexCount = indexCount;
+
+	mesh->AddComponent<VertexBufferComponent<Vertex>>();
+	mesh->GetComponent<VertexBufferComponent<Vertex>>().Initialize(device, vertices, vertexCount);
+
+	mesh->AddComponent<IndexBufferComponent<std::uint16_t>>();
+	mesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Initialize(device, indices, indexCount);
 
 	return mesh;
 }
