@@ -3,8 +3,10 @@ cbuffer ConstantBuffer : register(b0)
     matrix World;
     matrix Model;
     matrix View;
-    matrix Projection;
+    matrix Projection;    
+    float4 DiffuseAlbedo;
 }
+
 struct Layout
 {
     float4 position : SV_POSITION;
@@ -14,5 +16,5 @@ struct Layout
 
 float4 PSMain(Layout layout) : SV_TARGET
 {
-    return float4(layout.normal, 1.0f);
+    return DiffuseAlbedo;
 }

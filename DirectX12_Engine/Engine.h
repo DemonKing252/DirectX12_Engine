@@ -8,6 +8,7 @@
 #include "GeometryGenerator.h"
 #include "Transform.h"
 #include <cmath>
+#include <vector>
 /* Engine takes care of our game (example: ImGui etc) */
 /* D3DApp takes care of setting up D3D */
 
@@ -27,7 +28,8 @@ public:
 	void Draw() override;
 	void SwapBuffers() const;
 	void Clean() override;
-
+	
+	void UpdateConstants();
 	void BuildDescriptorHeaps();	// Used for RTV
 	void BuildConstantBufferViews();
 	void BuildRootSignature();
@@ -35,10 +37,10 @@ public:
 
 private:
 	std::unique_ptr<ConstantBuffer> m_constantBuffer;
-	std::shared_ptr<MeshGeometry> m_boxMesh;
+	std::vector<std::shared_ptr<MeshGeometry>> m_meshes;
 	
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
-	Microsoft::WRL::ComPtr<ID3D12Resource> m_cbvResource;
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_cbvResources;
 
 	static Engine* s_pInstance;
 

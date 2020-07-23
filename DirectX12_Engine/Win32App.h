@@ -13,6 +13,8 @@ private:
 	RECT m_windowDimensions;
 	HINSTANCE m_hInstance;
 
+	float m_Pitch = 0.0f, m_Yaw = -90.0f;
+	bool m_bLeft = false, m_bRight = false;
 	bool m_bQuitMessagePosted;
 public:
 	Win32App(LPCWSTR windowName, LPCWSTR windowClass);

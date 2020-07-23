@@ -79,6 +79,8 @@ void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 	m_viewPort.TopLeftY = 0;
 	m_viewPort.Width = window->GetDimensions().right;
 	m_viewPort.Height = window->GetDimensions().bottom;
+	m_viewPort.MinDepth = 0.0f;
+	m_viewPort.MaxDepth = 1.0f;
 
 	m_scissorsRect.top = 0;
 	m_scissorsRect.left = 0;
@@ -121,6 +123,45 @@ void D3DApp::BuildRenderTargetViews()
 
 		rtvHandle.Offset(1, rtvSize);
 	}
+}
+
+void D3DApp::BuildDepthStencilViews()
+{
+	// Depth Stencil Resources:
+
+	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	// Create the depth/stencil buffer and view.
+	D3D12_RESOURCE_DESC depthStencilDesc = {};
+	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Width = 800;
+	depthStencilDesc.Height = 600;
+	depthStencilDesc.DepthOrArraySize = 1;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	D3D12_CLEAR_VALUE optClear;
+	optClear.Format = mDepthStencilFormat;
+	optClear.DepthStencil.Depth = 1.0f;
+	optClear.DepthStencil.Stencil = 0;
+
+	ThrowIfFailed(m_device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&depthStencilDesc,
+		D3D12_RESOURCE_STATE_COMMON,
+		&optClear,
+		IID_PPV_ARGS(&m_depthStencilResource)));
+
+	// Create descriptor to mip level 0 of entire resource using the format of the resource.
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Format = mDepthStencilFormat;
+	dsvDesc.Texture2D.MipSlice = 0;
+
+	m_device->CreateDepthStencilView(m_depthStencilResource, &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 void D3DApp::WaitForPreviousFrame()

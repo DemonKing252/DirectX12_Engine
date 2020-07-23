@@ -1,5 +1,6 @@
 #include "Win32App.h"
 #include "Engine.h"
+#include "D3DCommon.h"
 LRESULT CALLBACK WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg )

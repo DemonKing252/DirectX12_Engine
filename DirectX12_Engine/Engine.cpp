@@ -26,20 +26,135 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	BuildCommandObjects();
 	BuildDescriptorHeaps();
 	BuildRenderTargetViews();
-	BuildConstantBufferViews();
+	BuildDepthStencilViews();
 	BuildRootSignature();
 	AssemblePipeline(vsPath, psPath);
 
 	GeometryGenerator geoGen;
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
 
-	m_boxMesh = geoGen.CreateBox(m_device.Get(), 1.0f, 1.0f, 1.0f);
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(1.0f, 0.5f, 0.0f);
 
-	DirectX::XMMATRIX model;
-	model = DirectX::XMMatrixIdentity();
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
 
-	m_boxMesh->AddComponent<TransformComponent>();
-	m_boxMesh->GetComponent<TransformComponent>().SetModelMatrix(model);
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp);
+	}
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
 
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(-1.0f, 0.5f, 0.0f);
+
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp);
+	}
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
+
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(1.0f, 0.5f, 1.0f);
+
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp);
+	}
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
+
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(-1.0f, 0.5f, 1.0f);
+
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp);
+	}
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
+
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(1.0f, 0.5f, -1.0f);
+
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp);
+	}
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 1.0f, 1.0f };
+
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(-1.0f, 0.5f, -1.0f);
+
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp);
+	}
+
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.5f, 0.0f, 1.0f };
+		
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(0.0f, 0.125f, 0.0f);
+	
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+	
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+	
+		m_cbvResources.push_back(temp);
+	}
+	{
+		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		m_meshes.back() = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f);
+		m_meshes.back()->DiffuseAlbedo = { 0.0f, 0.7f, 0.0f, 1.0f };
+
+		DirectX::XMMATRIX model;
+		model = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+
+		m_meshes.back()->AddComponent<TransformComponent>();
+		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources.push_back(temp);
+	}
+	
+	BuildConstantBufferViews();
 
 	// View port and scissors rect is in d3dApp since I need the window dimensions.
 }
@@ -50,34 +165,6 @@ void Engine::Update()
 	// Next buffer
 	m_iBufferIndex = (m_iBufferIndex + 1) % m_iNumBuffers;
 
-	DirectX::XMMATRIX model;
-	model = DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(m_iCurrentFence)) *
-		DirectX::XMMatrixTranslation(cos(static_cast<float>(DirectX::XMConvertToRadians(m_iCurrentFence))), 0.0f, 0.0f);
-	
-	m_boxMesh->GetComponent<TransformComponent>().SetModelMatrix(model);
-
-	DirectX::XMFLOAT4 Eye = { 0.0f, 3.0f, 3.0f, 1.0f };
-	DirectX::XMFLOAT4 Focus = { 0.0f, 0.0f, 0.0f, 1.0f };
-	DirectX::XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 1.0f };
-
-	m_constantBuffer->Model = m_boxMesh->GetComponent<TransformComponent>().GetModelMatrix();
-	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
-	(
-		DirectX::XMLoadFloat4(&Eye),
-		DirectX::XMLoadFloat4(&Focus),
-		DirectX::XMLoadFloat4(&Up)
-	);
-	m_constantBuffer->World = DirectX::XMMatrixTranspose
-	(
-		m_constantBuffer->Model *
-		m_constantBuffer->View *
-		m_constantBuffer->Projection
-	);
-
-	void* data;
-	m_cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&data));
-	CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
-	m_cbvResource->Unmap(0, nullptr);
 }
 
 void Engine::Draw()
@@ -86,27 +173,43 @@ void Engine::Draw()
 	currentRTVHandle.Offset(1, m_iBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
 	// Indicate that the back buffer will be used as a render target (according to Hooman's slides)
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	m_commandList->OMSetRenderTargets(1, &currentRTVHandle, false, nullptr);
+	m_commandList->OMSetRenderTargets(1, &currentRTVHandle, false, &m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
 	float ClearColor[] = { 0.0f, 0.0f, 0.3f, 1.0f };
 	m_commandList->ClearRenderTargetView(currentRTVHandle, ClearColor, 0, nullptr);
+	m_commandList->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(),
+		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 	m_commandList->RSSetViewports(1, &m_viewPort);
 	m_commandList->RSSetScissorRects(1, &m_scissorsRect);
 
-	m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResource->GetGPUVirtualAddress());
-	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
-	m_commandList->IASetVertexBuffers(0, 1, &m_boxMesh->GetComponent<VertexBufferComponent<Vertex>>().Get());
-	m_commandList->IASetIndexBuffer(&m_boxMesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+	for (int i = 0; i < (std::uint16_t)m_meshes.size(); i++)
+	{
+		m_constantBuffer->Model = m_meshes[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		m_constantBuffer->DiffuseAlbedo = m_meshes[i]->DiffuseAlbedo;
+		this->UpdateConstants();
 
-	m_commandList->DrawIndexedInstanced(m_boxMesh->IndexCount, 1, 0, 0, 0);
+		void* data;
+		m_cbvResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
+		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
+		m_cbvResources[i]->Unmap(0, nullptr);
+
+		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[i]->GetGPUVirtualAddress());
+		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		m_commandList->IASetVertexBuffers(0, 1, &m_meshes[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_commandList->IASetIndexBuffer(&m_meshes[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+
+		m_commandList->DrawIndexedInstanced(m_meshes[i]->IndexCount, 1, 0, 0, 0);
+	}
 
 	// Indicate that the back buffer will be used to present (according to Hooman's slides)
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	m_commandList->Close();
 
@@ -125,6 +228,24 @@ void Engine::Clean()
 	CloseHandle(m_fenceEvent);
 }
 
+void Engine::UpdateConstants()
+{
+	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
+	(
+		DirectX::XMLoadFloat4(&Camera::Eye),
+		DirectX::XMLoadFloat4(&Camera::Focus),
+		DirectX::XMLoadFloat4(&Camera::Up)
+	);
+	m_constantBuffer->Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(45.0f), 4.0f / 3.0f, 0.1f, 300.0f);
+
+	m_constantBuffer->World = DirectX::XMMatrixTranspose
+	(
+		m_constantBuffer->Model *
+		m_constantBuffer->View *
+		m_constantBuffer->Projection
+	);
+}
+
 void Engine::BuildDescriptorHeaps()
 {
 	// Render Target View
@@ -135,33 +256,17 @@ void Engine::BuildDescriptorHeaps()
 	rtvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
 	ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvDescHeapDesc, IID_PPV_ARGS(m_rtvDescriptorHeap.GetAddressOf())));
+
+	D3D12_DESCRIPTOR_HEAP_DESC depthStencilHeap = {};
+	depthStencilHeap.NumDescriptors = 1;
+	depthStencilHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&depthStencilHeap, IID_PPV_ARGS(&m_dsvHeap)));
 }
 
 void Engine::BuildConstantBufferViews()
 {
 	m_constantBuffer = std::make_unique<ConstantBuffer>();
-	
-	m_constantBuffer->Model = DirectX::XMMatrixIdentity();
-	
-	DirectX::XMFLOAT4 Eye = { 2.0f, 2.0f, 2.0f, 1.0f };
-	DirectX::XMFLOAT4 Focus = { 0.0f, 0.0f, 0.0f, 1.0f };
-	DirectX::XMFLOAT4 Up = { 0.0f, 1.0f, 0.0f, 1.0f };
-
-	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
-	(
-		DirectX::XMLoadFloat4(&Eye),
-		DirectX::XMLoadFloat4(&Focus),
-		DirectX::XMLoadFloat4(&Up)
-	);
-
-	m_constantBuffer->Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(45.0f), 4.0f / 3.0f, 0.1f, 300.0f);
-
-	m_constantBuffer->World = DirectX::XMMatrixTranspose
-	(
-		m_constantBuffer->Model * 
-		m_constantBuffer->View * 
-		m_constantBuffer->Projection
-	);
 
 	const UINT cBufferSize = sizeof(ConstantBuffer);
 	UINT AlignedBufferSize = 0U;
@@ -172,24 +277,32 @@ void Engine::BuildConstantBufferViews()
 	for (UINT i = 0; i < (UINT)std::ceil((float)cBufferSize / 256U); i++)
 		if (cBufferSize > 256U * i)
 			AlignedBufferSize += 256U;
+	
+	for (int i = 0; i < (std::uint16_t)m_cbvResources.size(); i++)
+	{
+		ThrowIfFailed(m_device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(AlignedBufferSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(m_cbvResources[i].GetAddressOf())
+		));
 
-	ThrowIfFailed(m_device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(AlignedBufferSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(m_cbvResource.GetAddressOf())
-	));
-
-	void* data;
-	m_cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&data));
-	CopyMemory(data, m_constantBuffer.get(), cBufferSize);
-	m_cbvResource->Unmap(0, nullptr);
+		void* data;
+		m_cbvResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
+		CopyMemory(data, m_constantBuffer.get(), cBufferSize);
+		m_cbvResources[i]->Unmap(0, nullptr);
+	}
 }
 
 void Engine::BuildRootSignature()
 {
+	/*
+	Slot Parameters in our Root Signature:
+		1. We have a Constant Buffer declared at base register 0
+	*/
+
 	CD3DX12_ROOT_PARAMETER slotParameters[1];
 
 	slotParameters[0].InitAsConstantBufferView(0);
@@ -224,10 +337,18 @@ void Engine::AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath)
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 	};
 
+	D3D12_RASTERIZER_DESC rasDesc;
+	ZeroMemory(&rasDesc, sizeof(D3D12_RASTERIZER_DESC));
+	
+	rasDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasDesc.AntialiasedLineEnable = true;
+	rasDesc.MultisampleEnable = true;
+
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
 	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState = rasDesc;
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs);
 	psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps);
@@ -235,8 +356,8 @@ void Engine::AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath)
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.DepthStencilState.DepthEnable = false;
-	psoDesc.DepthStencilState.StencilEnable = false;
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	psoDesc.InputLayout = { inputLayout, _countof(inputLayout) };
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.pRootSignature = m_rootSignature.Get();

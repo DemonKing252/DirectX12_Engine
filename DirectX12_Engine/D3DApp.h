@@ -48,6 +48,8 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvDescriptorHeap;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
+	ID3D12DescriptorHeap* m_dsvHeap;
+	ID3D12Resource* m_depthStencilResource;
 public:
 	D3DApp();
 	~D3DApp();
@@ -65,5 +67,8 @@ public:
 	void BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window);
 	void BuildCommandObjects();		
 	void BuildRenderTargetViews();	// For each frame
-	void WaitForPreviousFrame();		// Sync the CPU and GPU
+	void BuildDepthStencilViews();
+
+	/* Sync the CPU and GPU */
+	void WaitForPreviousFrame();		
 };

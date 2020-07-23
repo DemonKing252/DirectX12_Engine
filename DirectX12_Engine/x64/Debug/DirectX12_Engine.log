@@ -1,10 +1,2 @@
-﻿  D3DApp.cpp
-d:\program files (x86)\directx\directx12_engine\directx12_engine\d3dapp.cpp(80): warning C4244: '=': conversion from 'LONG' to 'FLOAT', possible loss of data
-d:\program files (x86)\directx\directx12_engine\directx12_engine\d3dapp.cpp(81): warning C4244: '=': conversion from 'LONG' to 'FLOAT', possible loss of data
-  Engine.cpp
-d:\program files (x86)\directx\directx12_engine\directx12_engine\engine.cpp(54): warning C4244: 'argument': conversion from 'UINT64' to 'float', possible loss of data
-d:\program files (x86)\directx\directx12_engine\directx12_engine\engine.cpp(55): warning C4244: 'argument': conversion from 'UINT64' to 'float', possible loss of data
-  Win32App.cpp
-  WinMain.cpp
-  Generating Code...
+﻿  Engine.cpp
   DirectX12_Engine.vcxproj -> D:\Program Files (x86)\DirectX\DirectX12_Engine\x64\Debug\DirectX12_Engine.exe

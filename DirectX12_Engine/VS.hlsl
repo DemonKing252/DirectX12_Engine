@@ -4,6 +4,8 @@ cbuffer ConstantBuffer : register(b0)
     matrix Model;
     matrix View;
     matrix Projection;
+    
+    float4 DiffuseAlbedo;
 }
 struct Layout
 {
