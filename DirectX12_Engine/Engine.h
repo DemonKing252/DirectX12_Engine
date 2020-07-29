@@ -4,9 +4,10 @@
 #include "D3DCommon.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "SubMeshGeometry.h"
+#include "MeshGeometry.h"
 #include "GeometryGenerator.h"
 #include "Transform.h"
+#include "DDSTextureLoader.h"
 #include <cmath>
 #include <vector>
 /* Engine takes care of our game (example: ImGui etc) */
@@ -32,6 +33,7 @@ public:
 	void UpdateConstants();
 	void BuildDescriptorHeaps();	// Used for RTV
 	void BuildConstantBufferViews();
+	void BuildShaderResourceViews();
 	void BuildRootSignature();
 	void AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath);
 
@@ -40,6 +42,10 @@ private:
 	std::vector<std::shared_ptr<MeshGeometry>> m_meshes;
 	
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+	std::unique_ptr<Texture> m_charCoalTex;
+	std::unique_ptr<Texture> m_glassTex;
+	std::unique_ptr<Texture> m_stoneTex;
+
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_cbvResources;
 
 	static Engine* s_pInstance;

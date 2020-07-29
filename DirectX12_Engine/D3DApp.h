@@ -23,15 +23,16 @@ class Win32App;
 class D3DApp
 {
 private:
-	// Not needed in base class:
+	// Not needed in derived class:
 	Microsoft::WRL::ComPtr<IDXGIFactory2> m_dxgiFactory2;
 	Microsoft::WRL::ComPtr<ID3D12Debug> m_debugController;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
 
 	HWND m_win32Wnd;
 protected:
 	// Too my discovery if a variable is to be used to define an array size in a class, it must be static!
+	// ^ This is of course if its allocated on the stack.
+
 	static const UINT m_iNumBuffers = 3;
 	UINT m_iBufferIndex = m_iNumBuffers - 1;
 
@@ -44,9 +45,12 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device;
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> m_dxgiSwapChain1;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_renderTargets[m_iNumBuffers];
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvDescriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_srvDescriptorHeap;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue;
+
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 	ID3D12DescriptorHeap* m_dsvHeap;
 	ID3D12Resource* m_depthStencilResource;

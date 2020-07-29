@@ -5,7 +5,6 @@
 #include <wrl.h>
 #include "EntityComponentSystem.h"
 
-// Can't include d3dApp or else we get a circular reference.
 #define CheckSucceeded(hr) if (!SUCCEEDED(hr)) { DebugBreak();}
 template <class T>
 class IndexBufferComponent : public Component
@@ -74,12 +73,15 @@ inline void IndexBufferComponent<T>::Initialize(ID3D12Device * device, T * data,
 	switch (sizeof(T))
 	{
 	case 1:
+		// std::uint8
 		format = DXGI_FORMAT_R8_UINT;
 		break;
 	case 2:
+		// std::uint16 
 		format = DXGI_FORMAT_R16_UINT;
 		break;
 	case 4:
+		// std::uint32
 		format = DXGI_FORMAT_R32_UINT;
 		break;
 	}

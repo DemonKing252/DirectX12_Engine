@@ -157,15 +157,15 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateCylinder(ID3D12Device * d
 	{
 		vertices[index].SetPosition({ 0.0f,h, 0.0f });
 		vertices[index].SetNormal({ 0.0f,h, 0.0f });
-		vertices[index].SetUV({ 0.0f, 0.0 });
+		vertices[index].SetUV({ 0.5f, 0.5f });
 
 		vertices[index + 1].SetPosition({ bottomRadius * cos_radians(angle), h, bottomRadius * sin_radians(angle) });
 		vertices[index + 1].SetNormal({ bottomRadius * cos_radians(angle), h, bottomRadius * sin_radians(angle) });
-		vertices[index + 1].SetUV({ 0.0f, 0.0f });
+		vertices[index + 1].SetUV({ (0.5f + (0.5f * cos_radians((angle)))), (0.5f + (0.5f * sin_radians((angle)))) });
 
 		vertices[index + 2].SetPosition({ bottomRadius * cos_radians(angle + stepOver), h, bottomRadius * sin_radians(angle + stepOver) });
 		vertices[index + 2].SetNormal({ bottomRadius * cos_radians(angle + stepOver), h, bottomRadius * sin_radians(angle + stepOver) });
-		vertices[index + 2].SetUV({ 0.0f, 0.0f });
+		vertices[index + 2].SetUV({ (0.5f + (0.5f * cos_radians(angle + stepOver))), (0.5f + (0.5f * sin_radians(angle + stepOver))) });
 
 		angle += stepOver;
 	}
@@ -175,16 +175,16 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateCylinder(ID3D12Device * d
 	{
 		vertices[index].SetPosition({ 0.0f,h, 0.0f });
 		vertices[index].SetNormal({ 0.0f,h, 0.0f });
-		vertices[index].SetUV({ 0.0f, 0.0 });
+		vertices[index].SetUV({ 0.5f, 0.5f });
 	
 		vertices[index + 1].SetPosition({ topRadius * cos_radians(angle), h, topRadius * sin_radians(angle) });
 		vertices[index + 1].SetNormal({ topRadius * cos_radians(angle), h, topRadius * sin_radians(angle) });
-		vertices[index + 1].SetUV({ 0.0f, 0.0f });
-	
+		vertices[index + 1].SetUV({ (0.5f + (0.5f * cos_radians((angle)))), (0.5f + (0.5f * sin_radians((angle)))) });
+
 		vertices[index + 2].SetPosition({ topRadius * cos_radians(angle - stepOver), h, topRadius * sin_radians(angle - stepOver) });
 		vertices[index + 2].SetNormal({ topRadius * cos_radians(angle - stepOver), h, topRadius * sin_radians(angle - stepOver) });
-		vertices[index + 2].SetUV({ 0.0f, 0.0f });
-	
+		vertices[index + 2].SetUV({ (0.5f + (0.5f * cos_radians(angle - stepOver))), (0.5f + (0.5f * sin_radians(angle - stepOver))) });
+
 		angle -= stepOver;
 	}
 
@@ -195,32 +195,32 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateCylinder(ID3D12Device * d
 		Pos = { bottomRadius * cos_radians(angle), -0.5f * height, bottomRadius * sin_radians(angle) };
 		vertices[index].SetPosition(Pos);
 		vertices[index].SetNormal(Pos);
-		vertices[index].SetUV({ 0.0f, 0.0 });
+		vertices[index].SetUV({ angle / 360.0f, 0.0f });
 
 		Pos = { topRadius * cos_radians(angle), +0.5f * height, topRadius * sin_radians(angle) };
 		vertices[index + 1].SetPosition(Pos);
 		vertices[index + 1].SetNormal(Pos);
-		vertices[index + 1].SetUV({ 0.0f, 0.0 });
+		vertices[index + 1].SetUV({ angle / 360.0f, 1.0f });
 		
 		Pos = { topRadius * cos_radians(angle + stepOver), +0.5f * height, topRadius * sin_radians(angle + stepOver) };
 		vertices[index + 2].SetPosition(Pos);
 		vertices[index + 2].SetNormal(Pos);
-		vertices[index + 2].SetUV({ 0.0f, 0.0 });
+		vertices[index + 2].SetUV({ (angle + stepOver) / 360.0f, 1.0f });
 
 		Pos = { topRadius * cos_radians(angle + stepOver), +0.5f * height, topRadius * sin_radians(angle + stepOver) };
 		vertices[index + 3].SetPosition(Pos);
 		vertices[index + 3].SetNormal(Pos);
-		vertices[index + 3].SetUV({ 0.0f, 0.0 });
+		vertices[index + 3].SetUV({ (angle + stepOver) / 360.0f, 1.0f });
 
 		Pos = { bottomRadius * cos_radians(angle + stepOver), -0.5f * height, bottomRadius * sin_radians(angle + stepOver) };
 		vertices[index + 4].SetPosition(Pos);
 		vertices[index + 4].SetNormal(Pos);
-		vertices[index + 4].SetUV({ 0.0f, 0.0 });
+		vertices[index + 4].SetUV({ (angle + stepOver) / 360.0f, 0.0f });
 
 		Pos = { bottomRadius * cos_radians(angle), -0.5f * height, bottomRadius * sin_radians(angle) };
 		vertices[index + 5].SetPosition(Pos);
 		vertices[index + 5].SetNormal(Pos);
-		vertices[index + 5].SetUV({ 0.0f, 0.0 });
+		vertices[index + 5].SetUV({ angle / 360.0f, 0.0f });
 
 		angle += stepOver;
 	}
@@ -267,50 +267,49 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateSphere(ID3D12Device * dev
 		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch));
 		vertices[i].SetPosition(Pos);
 		vertices[i].SetNormal(Pos);
-		vertices[i].SetUV({ 0.0f, 0.0 });
+		vertices[i].SetUV({ yaw / 360.0f, pitch / 180.0f });
 	
-		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch));
-		Pos.y = radius * (sin_radians(pitch));
-		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch));
+		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch + stepDown));
+		Pos.y = radius * (sin_radians(pitch + stepDown));
+		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch + stepDown));
 		vertices[i + 1].SetPosition(Pos);
 		vertices[i + 1].SetNormal(Pos);
-		vertices[i + 1].SetUV({ 0.0f, 0.0 });
+		vertices[i + 1].SetUV({ yaw / 360.0f, (pitch + stepDown) / 180.0f });
 	
 		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
 		Pos.y = radius * (sin_radians(pitch + stepDown));
 		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
 		vertices[i + 2].SetPosition(Pos);
 		vertices[i + 2].SetNormal(Pos);
-		vertices[i + 2].SetUV({ 0.0f, 0.0 });
+		vertices[i + 2].SetUV({ (yaw + stepOver) / 360.0f, (pitch + stepDown) / 180.0f });
 
 		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
 		Pos.y = radius * (sin_radians(pitch + stepDown));
 		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
 		vertices[i + 3].SetPosition(Pos);
 		vertices[i + 3].SetNormal(Pos);
-		vertices[i + 3].SetUV({ 0.0f, 0.0 });
+		vertices[i + 3].SetUV({ (yaw + stepOver) / 360.0f, (pitch + stepDown) / 180.0f });
 
-		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch + stepDown));
-		Pos.y = radius * (sin_radians(pitch + stepDown));
-		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch + stepDown));
+		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch));
+		Pos.y = radius * (sin_radians(pitch));
+		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch));
 		vertices[i + 4].SetPosition(Pos);
 		vertices[i + 4].SetNormal(Pos);
-		vertices[i + 4].SetUV({ 0.0f, 0.0 });
+		vertices[i + 4].SetUV({ (yaw + stepOver) / 360.0f, pitch / 180.0f });
 
 		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch));
 		Pos.y = radius * (sin_radians(pitch));
 		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch));
 		vertices[i + 5].SetPosition(Pos);
 		vertices[i + 5].SetNormal(Pos);
-		vertices[i + 5].SetUV({ 0.0f, 0.0 });
+		vertices[i + 5].SetUV({ yaw / 360.0f, pitch / 180.0f });
 	
 		yaw += stepOver;
 
 		if (yaw >= 0.0f && (int)yaw % 360 == 0) { pitch += stepDown; yaw = 0.0f; }
 	}
 
-
-	for (UINT i = 0; i < indexCount; i++)
+	for (UINT i = indexCount; i > 0; i--)
 		indices[i] = i;
 
 	mesh->VertexCount = vertexCount;

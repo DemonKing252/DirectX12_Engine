@@ -1,6 +1,8 @@
 #pragma once
-#include "SubMeshGeometry.h"
+#include "MeshGeometry.h"
 #include "D3DCommon.h"
+
+// This class is almost directly copy-pasted from my DirectX 11 Engine, since DirectX Math doesn't change
 class GeometryGenerator
 {
 public:

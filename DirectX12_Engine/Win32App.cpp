@@ -69,9 +69,6 @@ void Win32App::DispatchMessages()
 
 		if (m_msg.message == WM_QUIT) {
 			m_bQuitMessagePosted = true;
-
-			this->Clean();
-			D3D12App::GetApp()->Clean();
 		}
 
 		if (m_msg.message == WM_LBUTTONDOWN)
@@ -100,10 +97,7 @@ void Win32App::DispatchMessages()
 			{
 			case 27:
 				m_bQuitMessagePosted = true;
-				this->Clean();
-				D3D12App::GetApp()->Clean();
 				break;
-
 			}
 		}
 	}
@@ -133,13 +127,15 @@ void Win32App::DispatchMessages()
 		m_MouseL.y = HIWORD(m_msg.lParam);
 
 		DirectX::XMFLOAT2 Delta; 
-		
-		Delta.x = 0.25f*(m_MouseL.x - m_lastMouseL.x);
-		Delta.y = 0.25f*(m_MouseL.y - m_lastMouseL.y);
+		Delta.x = 0.05f*(m_MouseL.x - m_lastMouseL.x);
+		Delta.y = 0.05f*(m_MouseL.y - m_lastMouseL.y);
 
-		if (Delta.y < 0.0f && 0.25f*(Camera::m_Radius - Delta.y) > 1.0f)
+		if (Delta.y < 0.0f && 0.25f*(Camera::m_Radius - Delta.y) > 0.25f)
 		{
 			Camera::m_Radius += Delta.y;
+			if (Camera::m_Radius <= 0.01f)
+				return;
+
 			Camera::UpdateEyePosition();
 		}
 		else if (Delta.y > 0.0f && 0.25f*(Camera::m_Radius - Delta.y) <= 6.0f)

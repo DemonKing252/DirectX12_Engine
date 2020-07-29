@@ -160,18 +160,19 @@ void D3DApp::BuildDepthStencilViews()
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Format = mDepthStencilFormat;
 	dsvDesc.Texture2D.MipSlice = 0;
-
+	
 	m_device->CreateDepthStencilView(m_depthStencilResource, &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 void D3DApp::WaitForPreviousFrame()
 {
-	m_commandQueue->Signal(m_fence.Get(), m_iCurrentFence);
-
+	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_iCurrentFence));
+	// Wait for the GPU to finish marking commands up to this fence point
 	if (m_fence->GetCompletedValue() < m_iCurrentFence)
 	{
-		m_fence->SetEventOnCompletion(m_iCurrentFence, m_fenceEvent);
+		ThrowIfFailed(m_fence->SetEventOnCompletion(m_iCurrentFence, m_fenceEvent));
 		WaitForSingleObject(m_fenceEvent, INFINITE);
 	}
+	// Increment the fence
 	m_iCurrentFence++;
 }

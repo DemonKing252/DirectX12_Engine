@@ -150,12 +150,12 @@
     <ClCompile Include="EntityComponentSystem.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
-    <ClCompile Include="SubMeshGeometry.cpp" />
+    <ClCompile Include="MeshGeometry.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="Win32App.cpp" />
-    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="D3DMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3DApp.h" />
@@ -166,7 +166,7 @@
     <ClInclude Include="EntityComponentSystem.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="IndexBuffer.h" />
-    <ClInclude Include="SubMeshGeometry.h" />
+    <ClInclude Include="MeshGeometry.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
