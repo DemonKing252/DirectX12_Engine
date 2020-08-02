@@ -110,7 +110,7 @@ void Win32App::DispatchMessages()
 		m_MouseL.x = LOWORD(m_msg.lParam);
 		m_MouseL.y = HIWORD(m_msg.lParam);
 
-		DirectX::XMFLOAT2 Delta;
+		XMFLOAT2 Delta;
 		Delta.x = 0.25f*(m_MouseL.x - m_lastMouseL.x);
 		Delta.y = 0.25f*(m_MouseL.y - m_lastMouseL.y);
 		
@@ -126,7 +126,7 @@ void Win32App::DispatchMessages()
 		m_MouseL.x = LOWORD(m_msg.lParam);
 		m_MouseL.y = HIWORD(m_msg.lParam);
 
-		DirectX::XMFLOAT2 Delta; 
+		XMFLOAT2 Delta; 
 		Delta.x = 0.05f*(m_MouseL.x - m_lastMouseL.x);
 		Delta.y = 0.05f*(m_MouseL.y - m_lastMouseL.y);
 

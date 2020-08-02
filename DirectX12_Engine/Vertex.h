@@ -1,19 +1,20 @@
 #pragma once
 #include <DirectXMath.h>
+using namespace DirectX;
 class Vertex
 {
 public:
-	void SetPosition(DirectX::XMFLOAT3 position);
-	void SetUV(DirectX::XMFLOAT2 uv);
-	void SetNormal(DirectX::XMFLOAT3 normal);
+	void SetPosition(XMFLOAT3 position);
+	void SetUV(XMFLOAT2 uv);
+	void SetNormal(XMFLOAT3 normal);
 
-	DirectX::XMFLOAT3 GetPosition()const;
-	DirectX::XMFLOAT2 GetUV()const;
-	DirectX::XMFLOAT3 GetNormal()const;
+	XMFLOAT3 GetPosition()const;
+	XMFLOAT2 GetUV()const;
+	XMFLOAT3 GetNormal()const;
 
 	Vertex();
 	Vertex(Vertex* other);
-	Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT2 uv, DirectX::XMFLOAT3 normal);
+	Vertex(XMFLOAT3 position, XMFLOAT2 uv, XMFLOAT3 normal);
 	
 	void Zero();
 	void operator=(Vertex other);
@@ -21,7 +22,7 @@ public:
 
 
 private:
-	DirectX::XMFLOAT3 Position;
-	DirectX::XMFLOAT2 UV;
-	DirectX::XMFLOAT3 Normal;
+	XMFLOAT3 Position;
+	XMFLOAT2 UV;
+	XMFLOAT3 Normal;
 };

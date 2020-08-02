@@ -34,7 +34,7 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	GeometryGenerator geoGen;
 	
 
-	DirectX::XMFLOAT3 Positions[10] = 
+	XMFLOAT3 Positions[10] = 
 	{
 		{-1.0f, 0.5f, +0.0f },
 		{+1.0f, 0.5f, +0.0f },
@@ -60,8 +60,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_stoneTex->hGPUHandle;
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_stoneTex->m_texResource;
 
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(Positions[i].x, Positions[i].y, Positions[i].z);
+		XMMATRIX model;
+		model = XMMatrixTranslation(Positions[i].x, Positions[i].y, Positions[i].z);
 
 		m_meshes.back()->AddComponent<TransformComponent>();
 		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
@@ -82,7 +82,7 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
 
-		model = DirectX::XMMatrixTranslation(Positions[i].x, Positions[i].y+0.6f, Positions[i].z);
+		model = XMMatrixTranslation(Positions[i].x, Positions[i].y+0.6f, Positions[i].z);
 
 		m_meshes.back()->AddComponent<TransformComponent>();
 		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
@@ -103,8 +103,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
 
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(0.0f, 0.125f, 0.0f);
+		XMMATRIX model;
+		model = XMMatrixTranslation(0.0f, 0.125f, 0.0f);
 	
 		m_meshes.back()->AddComponent<TransformComponent>();
 		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
@@ -124,8 +124,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_charCoalTex->hGPUHandle;
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_charCoalTex->m_texResource;
 
-		DirectX::XMMATRIX model;
-		model = DirectX::XMMatrixTranslation(0.0f, -0.0001f, 0.0f);
+		XMMATRIX model;
+		model = XMMatrixTranslation(0.0f, -0.0001f, 0.0f);
 
 		m_meshes.back()->AddComponent<TransformComponent>();
 		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
@@ -214,15 +214,24 @@ void Engine::UpdateConstants()
 {
 	Camera::UpdateEyePosition();
 
-	m_constantBuffer->View = DirectX::XMMatrixLookAtLH
-	(
-		DirectX::XMLoadFloat4(&Camera::Eye),
-		DirectX::XMLoadFloat4(&Camera::Focus),
-		DirectX::XMLoadFloat4(&Camera::Up)
-	);
-	m_constantBuffer->Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(45.0f), 4.0f / 3.0f, 0.1f, 300.0f);
+	m_constantBuffer->EyeWorldSpace = { Camera::Eye.x, Camera::Eye.y, Camera::Eye.z, 1.0f };
 
-	m_constantBuffer->World = DirectX::XMMatrixTranspose
+	m_constantBuffer->pLight[0].Position = { 2.0f, 0.5f, 0.0f };
+	m_constantBuffer->pLight[0].Strength = { 1.5f, 1.5f, 1.5f };
+	m_constantBuffer->pLight[0].FallOffStart = 0.1f;
+	m_constantBuffer->pLight[0].FallOffEnd = 15.0f;
+	m_constantBuffer->pLight[0].Direction = { -2.0f, -0.5f, 0.0f };
+	m_constantBuffer->pLight[0].SpecularStrength = 4.0f;
+
+	m_constantBuffer->View = XMMatrixLookAtLH
+	(
+		XMLoadFloat4(&Camera::Eye),
+		XMLoadFloat4(&Camera::Focus),
+		XMLoadFloat4(&Camera::Up)
+	);
+	m_constantBuffer->Projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), 4.0f / 3.0f, 0.1f, 300.0f);
+
+	m_constantBuffer->World = XMMatrixTranspose
 	(
 		m_constantBuffer->Model *
 		m_constantBuffer->View *
@@ -411,7 +420,7 @@ void Engine::BuildRootSignature()
 	CD3DX12_ROOT_PARAMETER slotParameters[2];
 
 	slotParameters[0].InitAsConstantBufferView(0);
-	slotParameters[1].InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
+	slotParameters[1].InitAsDescriptorTable(1, &descRange);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 	ZeroMemory(&rootSignatureDesc, sizeof(CD3DX12_ROOT_SIGNATURE_DESC));
@@ -459,7 +468,8 @@ void Engine::AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath)
 	rasDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	rasDesc.AntialiasedLineEnable = true;
-	rasDesc.MultisampleEnable = true;
+	rasDesc.MultisampleEnable = false;
+	
 
 	// Official graphics pipeline
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;

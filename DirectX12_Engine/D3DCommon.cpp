@@ -1,7 +1,7 @@
 #include "D3DCommon.h"
-DirectX::XMFLOAT4 Camera::Eye = { 0.0f, 3.0f, -3.0f, 1.0f };
-DirectX::XMFLOAT4 Camera::Focus = { 0.0f, 0.0f, 0.0f, 1.0f };
-DirectX::XMFLOAT4 Camera::Up = { 0.0f, 1.0f, 0.0f, 1.0f };
+XMFLOAT4 Camera::Eye = { 0.0f, 3.0f, -3.0f, 1.0f };
+XMFLOAT4 Camera::Focus = { 0.0f, 0.0f, 0.0f, 1.0f };
+XMFLOAT4 Camera::Up = { 0.0f, 1.0f, 0.0f, 1.0f };
 float Camera::m_Pitch = 30.0f;
 float Camera::m_Yaw = -90.0f;
 float Camera::m_Radius = 5.0f;

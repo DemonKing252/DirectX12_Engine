@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <DirectXMath.h>
+using namespace DirectX;
 class Win32App
 {
 private:
@@ -13,8 +14,8 @@ private:
 	RECT m_windowDimensions;
 	HINSTANCE m_hInstance;
 
-	DirectX::XMFLOAT2 m_MouseL;
-	DirectX::XMFLOAT2 m_lastMouseL;
+	XMFLOAT2 m_MouseL;
+	XMFLOAT2 m_lastMouseL;
 
 	bool m_bLeft = false, m_bRight = false;
 	bool m_bQuitMessagePosted;

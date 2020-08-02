@@ -15,7 +15,7 @@ public:
 	UINT IndexCount;
 	UINT VertexCount;
 
-	DirectX::XMFLOAT4 DiffuseAlbedo;
+	XMFLOAT4 DiffuseAlbedo;
 
 	// This cannot be changed to a different list like a triangle fan or a quad for now.
 	D3D12_PRIMITIVE_TOPOLOGY m_d3dPrimitiveTopology;

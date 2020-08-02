@@ -7,9 +7,9 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateTriangle(ID3D12Device * d
 
 	Vertex vertices[3] =
 	{
-		/*0*/Vertex(DirectX::XMFLOAT3(-0.5f, -0.5f, +0.0f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f)),
-		/*1*/Vertex(DirectX::XMFLOAT3(+0.0f, +0.5f, +0.0f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		/*2*/Vertex(DirectX::XMFLOAT3(+0.5f, -0.5f, +0.0f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*0*/Vertex(XMFLOAT3(-0.5f, -0.5f, +0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)),
+		/*1*/Vertex(XMFLOAT3(+0.0f, +0.5f, +0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		/*2*/Vertex(XMFLOAT3(+0.5f, -0.5f, +0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
 	};
 
 	std::uint16_t indices[3] = { 0, 1, 2 };
@@ -35,35 +35,35 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateBox(ID3D12Device * device
 	Vertex vertices[] =
 	{
 		//								[  vertex position  ]					[texture coord]				   [	  normal	  ]
-		/*0*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, -height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f)),
-		/*1*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, -height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f)),
-		/*2*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, -height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f)),
-		/*3*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, -height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f)),
+		/*0*/	Vertex(XMFLOAT3(-width * 0.5f, -height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
+		/*1*/	Vertex(XMFLOAT3(+width * 0.5f, -height * 0.5f, -depth * 0.5f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
+		/*2*/	Vertex(XMFLOAT3(+width * 0.5f, -height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
+		/*3*/	Vertex(XMFLOAT3(-width * 0.5f, -height * 0.5f, +depth * 0.5f), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
 
-		/*4*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, +height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		/*5*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, +height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		/*6*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, +height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		/*7*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, +height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		/*4*/	Vertex(XMFLOAT3(-width * 0.5f, +height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		/*5*/	Vertex(XMFLOAT3(+width * 0.5f, +height * 0.5f, -depth * 0.5f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		/*6*/	Vertex(XMFLOAT3(+width * 0.5f, +height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		/*7*/	Vertex(XMFLOAT3(-width * 0.5f, +height * 0.5f, +depth * 0.5f), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
 
-		/*8*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, -height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f)),
-		/*9*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, -height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f)),
-		/*10*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, +height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f)),
-		/*11*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, +height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f)),
+		/*8*/	Vertex(XMFLOAT3(-width * 0.5f, -height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
+		/*9*/	Vertex(XMFLOAT3(-width * 0.5f, -height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
+		/*10*/	Vertex(XMFLOAT3(-width * 0.5f, +height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
+		/*11*/	Vertex(XMFLOAT3(-width * 0.5f, +height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
 
-		/*12*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, -height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(+1.0f, 0.0f, 0.0f)),
-		/*13*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, -height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(+1.0f, 0.0f, 0.0f)),
-		/*14*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, +height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(+1.0f, 0.0f, 0.0f)),
-		/*15*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, +height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(+1.0f, 0.0f, 0.0f)),
+		/*12*/	Vertex(XMFLOAT3(+width * 0.5f, -height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
+		/*13*/	Vertex(XMFLOAT3(+width * 0.5f, -height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
+		/*14*/	Vertex(XMFLOAT3(+width * 0.5f, +height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
+		/*15*/	Vertex(XMFLOAT3(+width * 0.5f, +height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
 
-		/*16*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, -height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f)),
-		/*17*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, -height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f)),
-		/*18*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, +height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f)),
-		/*19*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, +height * 0.5f, +depth * 0.5f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*16*/	Vertex(XMFLOAT3(-width * 0.5f, -height * 0.5f, +depth * 0.5f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*17*/	Vertex(XMFLOAT3(+width * 0.5f, -height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*18*/	Vertex(XMFLOAT3(+width * 0.5f, +height * 0.5f, +depth * 0.5f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*19*/	Vertex(XMFLOAT3(-width * 0.5f, +height * 0.5f, +depth * 0.5f), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
 
-		/*20*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, -height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f)),
-		/*21*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, -height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f)),
-		/*22*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, +height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f)),
-		/*23*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, +height * 0.5f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f)),
+		/*20*/	Vertex(XMFLOAT3(-width * 0.5f, -height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),
+		/*21*/	Vertex(XMFLOAT3(+width * 0.5f, -height * 0.5f, -depth * 0.5f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),
+		/*22*/	Vertex(XMFLOAT3(+width * 0.5f, +height * 0.5f, -depth * 0.5f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),
+		/*23*/	Vertex(XMFLOAT3(-width * 0.5f, +height * 0.5f, -depth * 0.5f), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),
 	};
 	std::uint16_t indices[]
 	{
@@ -123,10 +123,10 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateGrid(ID3D12Device * devic
 
 	for (int i = 0; i < vertexCount; i+=4)
 	{
-		vertices[i + 0] = Vertex(DirectX::XMFLOAT3(x + stepOver, 0.0f, z           ), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));
-		vertices[i + 1] = Vertex(DirectX::XMFLOAT3(x,			 0.0f, z           ), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));
-		vertices[i + 2] = Vertex(DirectX::XMFLOAT3(x,			 0.0f, z + stepDown), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));											  	
-		vertices[i + 3] = Vertex(DirectX::XMFLOAT3(x + stepOver, 0.0f, z + stepDown), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));
+		vertices[i + 0] = Vertex(XMFLOAT3(x + stepOver, 0.0f, z           ), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(0.0f, +1.0f, 0.0f));
+		vertices[i + 1] = Vertex(XMFLOAT3(x,			 0.0f, z           ), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(0.0f, +1.0f, 0.0f));
+		vertices[i + 2] = Vertex(XMFLOAT3(x,			 0.0f, z + stepDown), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(0.0f, +1.0f, 0.0f));											  	
+		vertices[i + 3] = Vertex(XMFLOAT3(x + stepOver, 0.0f, z + stepDown), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, +1.0f, 0.0f));
 		
 		x += stepOver;
 
@@ -215,38 +215,38 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateCylinder(ID3D12Device * d
 		angle -= stepOver;
 	}
 
-	DirectX::XMFLOAT3 Pos;
+	XMFLOAT3 Pos;
 	angle = 0.0f;
 	for (index; index < (2 * (1080 / stepOver))+2160 / stepOver; index += 6)
 	{
 		Pos = { bottomRadius * cos_radians(angle), -0.5f * height, bottomRadius * sin_radians(angle) };
 		vertices[index].SetPosition(Pos);
-		vertices[index].SetNormal(Pos);
+		vertices[index].SetNormal({ Pos.x, 0.0f, Pos.z });
 		vertices[index].SetUV({ angle / 360.0f, 0.0f });
 
 		Pos = { topRadius * cos_radians(angle), +0.5f * height, topRadius * sin_radians(angle) };
 		vertices[index + 1].SetPosition(Pos);
-		vertices[index + 1].SetNormal(Pos);
+		vertices[index + 1].SetNormal({ Pos.x, 0.0f, Pos.z });
 		vertices[index + 1].SetUV({ angle / 360.0f, 1.0f });
 		
 		Pos = { topRadius * cos_radians(angle + stepOver), +0.5f * height, topRadius * sin_radians(angle + stepOver) };
 		vertices[index + 2].SetPosition(Pos);
-		vertices[index + 2].SetNormal(Pos);
+		vertices[index + 2].SetNormal({ Pos.x, 0.0f, Pos.z });
 		vertices[index + 2].SetUV({ (angle + stepOver) / 360.0f, 1.0f });
 
 		Pos = { topRadius * cos_radians(angle + stepOver), +0.5f * height, topRadius * sin_radians(angle + stepOver) };
 		vertices[index + 3].SetPosition(Pos);
-		vertices[index + 3].SetNormal(Pos);
+		vertices[index + 3].SetNormal({ Pos.x, 0.0f, Pos.z });
 		vertices[index + 3].SetUV({ (angle + stepOver) / 360.0f, 1.0f });
 
 		Pos = { bottomRadius * cos_radians(angle + stepOver), -0.5f * height, bottomRadius * sin_radians(angle + stepOver) };
 		vertices[index + 4].SetPosition(Pos);
-		vertices[index + 4].SetNormal(Pos);
+		vertices[index + 4].SetNormal({ Pos.x, 0.0f, Pos.z });
 		vertices[index + 4].SetUV({ (angle + stepOver) / 360.0f, 0.0f });
 
 		Pos = { bottomRadius * cos_radians(angle), -0.5f * height, bottomRadius * sin_radians(angle) };
 		vertices[index + 5].SetPosition(Pos);
-		vertices[index + 5].SetNormal(Pos);
+		vertices[index + 5].SetNormal({ Pos.x, 0.0f, Pos.z });
 		vertices[index + 5].SetUV({ angle / 360.0f, 0.0f });
 
 		angle += stepOver;
@@ -279,7 +279,7 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateSphere(ID3D12Device * dev
 	Vertex* vertices = new Vertex[vertexCount];
 	std::uint16_t* indices = new std::uint16_t[indexCount];
 
-	DirectX::XMFLOAT3 Pos;
+	XMFLOAT3 Pos;
 
 	float stepOver = static_cast<float>(360.0f/sliceCount);
 	float stepDown = static_cast<float>(180.0f/stackCount);

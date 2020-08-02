@@ -16,7 +16,7 @@ Transform::Transform(Transform * other)
 	this->Angle = other->GetAngle();
 }
 
-Transform::Transform(DirectX::XMFLOAT3 translate, DirectX::XMFLOAT3 rotAxis, DirectX::XMFLOAT3 scale, FLOAT angle)
+Transform::Transform(XMFLOAT3 translate, XMFLOAT3 rotAxis, XMFLOAT3 scale, FLOAT angle)
 {
 	this->Translate = translate;
 	this->RotationAxis = rotAxis;
@@ -24,17 +24,17 @@ Transform::Transform(DirectX::XMFLOAT3 translate, DirectX::XMFLOAT3 rotAxis, Dir
 	this->Angle = angle;
 }
 
-void Transform::SetTranslation(DirectX::XMFLOAT3 translate)
+void Transform::SetTranslation(XMFLOAT3 translate)
 {
 	this->Translate = translate;
 }
 
-void Transform::SetRotationAxis(DirectX::XMFLOAT3 rotAxis)
+void Transform::SetRotationAxis(XMFLOAT3 rotAxis)
 {
 	this->RotationAxis = rotAxis;
 }
 
-void Transform::SetScaling(DirectX::XMFLOAT3 scale)
+void Transform::SetScaling(XMFLOAT3 scale)
 {
 	this->Scale = scale;
 }
@@ -44,35 +44,35 @@ void Transform::SetAngle(FLOAT angle)
 	this->Angle = angle;
 }
 
-void Transform::SetModelMatrix(DirectX::XMMATRIX matrix)
+void Transform::SetModelMatrix(XMMATRIX matrix)
 {
 	this->Model = matrix;
 }
 
 void Transform::Zero()
 {
-	this->Model = DirectX::XMMatrixIdentity();
-	this->Scale = this->RotationAxis = this->Translate = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+	this->Model = XMMatrixIdentity();
+	this->Scale = this->RotationAxis = this->Translate = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	this->Angle = 0.0f;
 
 }
 
-DirectX::XMMATRIX Transform::GetModelMatrix() const
+XMMATRIX Transform::GetModelMatrix() const
 {
 	return Model;
 }
 
-DirectX::XMFLOAT3  Transform::GetTranslation()const
+XMFLOAT3  Transform::GetTranslation()const
 {
 	return this->Translate;
 }
 
-DirectX::XMFLOAT3  Transform::GetRotationAxis()const
+XMFLOAT3  Transform::GetRotationAxis()const
 {
 	return this->RotationAxis;
 }
 
-DirectX::XMFLOAT3  Transform::GetScaling()const
+XMFLOAT3  Transform::GetScaling()const
 {
 	return this->Scale;
 }

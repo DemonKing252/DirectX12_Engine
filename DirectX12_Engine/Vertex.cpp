@@ -1,30 +1,30 @@
 #include "Vertex.h"
-void Vertex::SetPosition(DirectX::XMFLOAT3 position)
+void Vertex::SetPosition(XMFLOAT3 position)
 {
 	this->Position = position;
 }
 
-void Vertex::SetUV(DirectX::XMFLOAT2 uv)
+void Vertex::SetUV(XMFLOAT2 uv)
 {
 	this->UV = uv;
 }
 
-void Vertex::SetNormal(DirectX::XMFLOAT3 normal)
+void Vertex::SetNormal(XMFLOAT3 normal)
 {
 	this->Normal = normal;
 }
 
-DirectX::XMFLOAT3 Vertex::GetPosition() const
+XMFLOAT3 Vertex::GetPosition() const
 {
 	return Position;
 }
 
-DirectX::XMFLOAT2 Vertex::GetUV() const
+XMFLOAT2 Vertex::GetUV() const
 {
 	return UV;
 }
 
-DirectX::XMFLOAT3 Vertex::GetNormal() const
+XMFLOAT3 Vertex::GetNormal() const
 {
 	return Normal;
 }
@@ -39,16 +39,16 @@ Vertex::Vertex(Vertex * other)
 
 }
 
-Vertex::Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT2 uv, DirectX::XMFLOAT3 normal)
+Vertex::Vertex(XMFLOAT3 position, XMFLOAT2 uv, XMFLOAT3 normal)
 	: Position(position), UV(uv), Normal(normal)
 {
 }
 
 void Vertex::Zero()
 {
-	this->Position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-	this->UV = DirectX::XMFLOAT2(0.0f, 0.0f);
-	this->Normal = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+	this->Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	this->UV = XMFLOAT2(0.0f, 0.0f);
+	this->Normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
 }
 
 void Vertex::operator=(Vertex other)

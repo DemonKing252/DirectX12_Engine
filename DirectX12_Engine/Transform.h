@@ -2,34 +2,35 @@
 #include <DirectXMath.h>
 #include <Windows.h>
 #include "EntityComponentSystem.h"
+using namespace DirectX;
 typedef class Transform : public Component
 {
 private:
-	DirectX::XMFLOAT3 Translate;
-	DirectX::XMFLOAT3 Scale;
-	DirectX::XMFLOAT3 RotationAxis;
+	XMFLOAT3 Translate;
+	XMFLOAT3 Scale;
+	XMFLOAT3 RotationAxis;
 	FLOAT Angle;
 
-	DirectX::XMMATRIX Model;
+	XMMATRIX Model;
 public:
 
 	Transform();
 	~Transform();
 
 	Transform(Transform* other);
-	Transform(DirectX::XMFLOAT3 translate, DirectX::XMFLOAT3 rotAxis, DirectX::XMFLOAT3 scale, FLOAT angle);
+	Transform(XMFLOAT3 translate, XMFLOAT3 rotAxis, XMFLOAT3 scale, FLOAT angle);
 	
-	void SetTranslation(DirectX::XMFLOAT3 translate);
-	void SetRotationAxis(DirectX::XMFLOAT3 rotAxis);
-	void SetScaling(DirectX::XMFLOAT3 scale);
+	void SetTranslation(XMFLOAT3 translate);
+	void SetRotationAxis(XMFLOAT3 rotAxis);
+	void SetScaling(XMFLOAT3 scale);
 	void SetAngle(FLOAT angle);
-	void SetModelMatrix(DirectX::XMMATRIX matrix);
+	void SetModelMatrix(XMMATRIX matrix);
 	void Zero();
 
-	DirectX::XMFLOAT3 GetTranslation()const;
-	DirectX::XMFLOAT3 GetRotationAxis()const;
-	DirectX::XMFLOAT3 GetScaling()const;
+	XMFLOAT3 GetTranslation()const;
+	XMFLOAT3 GetRotationAxis()const;
+	XMFLOAT3 GetScaling()const;
 	FLOAT GetAngle()const;
-	DirectX::XMMATRIX GetModelMatrix() const;
+	XMMATRIX GetModelMatrix() const;
 
 } Transform, TransformComponent;
