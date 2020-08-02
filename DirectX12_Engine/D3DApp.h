@@ -8,7 +8,6 @@
 #include "d3dx12.h"
 #include <DirectXColors.h>
 #include <DirectXMath.h>
-class Win32App;
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -20,6 +19,7 @@ class Win32App;
 		DebugBreak();		\
 }							\
 
+class Win32App;
 class D3DApp
 {
 private:

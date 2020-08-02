@@ -4,9 +4,12 @@
 /*********************************************************************************
 DirectX12_Engine::D3DMain.cpp by Liam Blake (C) 2020 All Rights Reserved.
 
-Created: 2020-07-20
-Modified: 2020-07-28
-Lines of code: 1788
+	Created:			 2020-07-20
+	Modified:			 2020-08-02
+	Total Lines of code: 2155
+	
+	Last Change:
+		Added a subdividing grid. Also fixed the texture sampler from returning a black and white texture in PS.hlsl
 
 *********************************************************************************/
 

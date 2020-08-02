@@ -4,6 +4,7 @@ cbuffer ConstantBuffer : register(b0)
     matrix Model;
     matrix View;
     matrix Projection;    
+    
     float4 DiffuseAlbedo;
 }
 struct Layout
@@ -17,7 +18,7 @@ Texture2D tex : TEXTURE : register(t0);
 
 float4 PSMain(Layout layout) : SV_TARGET
 {
-    float pixelColor = tex.Sample(samplerState, layout.texCoord);
+    float4 pixelColor = tex.Sample(samplerState, layout.texCoord);
     
     return pixelColor * DiffuseAlbedo;
 }

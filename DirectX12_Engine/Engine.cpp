@@ -32,6 +32,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	AssemblePipeline(vsPath, psPath);
 
 	GeometryGenerator geoGen;
+	
+
 	DirectX::XMFLOAT3 Positions[10] = 
 	{
 		{-1.0f, 0.5f, +0.0f },
@@ -49,10 +51,12 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	for (UINT i = 0; i < _countof(Positions); i++)
 	{
 		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+
+		auto cylinder = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		m_meshes.back() = cylinder;
 
 		m_meshes.back()->AddComponent<MaterialComponent>();
-		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 0.0f, 1.0f, 0.0f, 1.0f };
+		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_stoneTex->hGPUHandle;
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_stoneTex->m_texResource;
 
@@ -69,10 +73,12 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		// ----------------------
 
 		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateSphere(m_device.Get(), 0.1f, 10, 20);
+
+		auto sphere = geoGen.CreateSphere(m_device.Get(), 0.1f, 30, 40);
+		m_meshes.back() = sphere;
 
 		m_meshes.back()->AddComponent<MaterialComponent>(); 
-		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 0.0f, 0.0f, 1.0f, 1.0f };
+		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
 
@@ -88,10 +94,12 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 
 	{
 		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
+
+		auto box = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
+		m_meshes.back() = box;
 
 		m_meshes.back()->AddComponent<MaterialComponent>();
-		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 0.0f, 0.0f, 1.0f, 1.0f };
+		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
 		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
 
@@ -107,7 +115,9 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	}
 	{
 		m_meshes.push_back(std::make_shared<MeshGeometry>());
-		m_meshes.back() = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f);
+
+		auto grid = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f, 6, 10);
+		m_meshes.back() = grid;
 
 		m_meshes.back()->AddComponent<MaterialComponent>(); 
 		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -150,8 +160,7 @@ void Engine::Draw()
 
 	m_commandList->OMSetRenderTargets(1, &currentRTVHandle, true, &m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-	float ClearColor[] = { 0.0f, 0.0f, 0.3f, 1.0f };
-	m_commandList->ClearRenderTargetView(currentRTVHandle, ClearColor, 0, nullptr);
+	m_commandList->ClearRenderTargetView(currentRTVHandle, DirectX::Colors::LightBlue, 0, nullptr);
 	m_commandList->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(),
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
@@ -276,7 +285,7 @@ void Engine::BuildConstantBufferViews()
 	// descriptor table at a time - we would have to store our CBV and SRV handles in the same heap.
 	
 	// This would be really messy and tedious!! ^^^
-	for (int i = 0; i < (std::uint16_t)m_cbvResources.size(); i++)
+	for (std::uint16_t i = 0; i < (std::uint16_t)m_cbvResources.size(); i++)
 	{
 		ThrowIfFailed(m_device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -300,21 +309,21 @@ void Engine::BuildShaderResourceViews()
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
 		m_device.Get(),
 		m_commandList.Get(),
-		L"Charcoal.dds",
+		L"assets/grass.dds",
 		m_charCoalTex->m_texResource,
 		m_charCoalTex->m_texHeap
 	));
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
 		m_device.Get(),
 		m_commandList.Get(),
-		L"Glass.dds",
+		L"assets/stone.dds",
 		m_glassTex->m_texResource,
 		m_glassTex->m_texHeap
 	));
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
 		m_device.Get(),
 		m_commandList.Get(),
-		L"Stone.dds",
+		L"assets/roughstone.dds",
 		m_stoneTex->m_texResource,
 		m_stoneTex->m_texHeap
 	));
@@ -323,9 +332,9 @@ void Engine::BuildShaderResourceViews()
 	ZeroMemory(&srvDesc, sizeof(D3D12_SHADER_RESOURCE_VIEW_DESC));
 
 	srvDesc.Format = m_glassTex->m_texResource->GetDesc().Format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Texture2D.MipLevels = m_glassTex->m_texResource->GetDesc().MipLevels;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
 	// Point to the start of the descriptor heap
 	// We need GPU access to the texture location in the heap, so we need to store that address in our texture class
@@ -389,10 +398,10 @@ void Engine::BuildRootSignature()
 
 	samplerState.Init
 	(
-		0,
-		D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+		0, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP
 	);
 

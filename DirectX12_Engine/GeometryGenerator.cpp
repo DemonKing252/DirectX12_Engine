@@ -105,34 +105,61 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateBox(ID3D12Device * device
 	return mesh;
 }
 
-std::shared_ptr<MeshGeometry> GeometryGenerator::CreateGrid(ID3D12Device * device, float width, float depth)
+std::shared_ptr<MeshGeometry> GeometryGenerator::CreateGrid(ID3D12Device * device, float width, float depth, int cols, int rows)
 {
 	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
 
-	Vertex vertices[] =
+	const int triangleCount = (rows * cols) * 6;
+	const int vertexCount =   (rows * cols) * 4;
+
+	Vertex* vertices = new Vertex[vertexCount];
+	std::uint16_t* indices = new std::uint16_t[triangleCount];
+
+	float stepOver = width / cols;
+	float stepDown = depth / rows;
+
+	float x = -width * 0.5f;
+	float z = -depth * 0.5f;
+
+	for (int i = 0; i < vertexCount; i+=4)
 	{
-		/*0*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, 0.0f, +depth * 0.5f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f)),
-		/*1*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, 0.0f, +depth * 0.5f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f)),
-		/*2*/	Vertex(DirectX::XMFLOAT3(+width * 0.5f, 0.0f, -depth * 0.5f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f)),
-		/*3*/	Vertex(DirectX::XMFLOAT3(-width * 0.5f, 0.0f, -depth * 0.5f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f)),
+		vertices[i + 0] = Vertex(DirectX::XMFLOAT3(x + stepOver, 0.0f, z           ), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));
+		vertices[i + 1] = Vertex(DirectX::XMFLOAT3(x,			 0.0f, z           ), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));
+		vertices[i + 2] = Vertex(DirectX::XMFLOAT3(x,			 0.0f, z + stepDown), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));											  	
+		vertices[i + 3] = Vertex(DirectX::XMFLOAT3(x + stepOver, 0.0f, z + stepDown), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f));
+		
+		x += stepOver;
 
-	};
-	std::uint16_t indices[]
+		if (x == width*0.5f)
+		{
+			x = -width * 0.5f;
+			z += stepDown;
+		}
+	}
+
+	int index = 0;
+	for (int i = 0; i < vertexCount; i+=4)
 	{
-		// bottom
-		0, 1, 2,
-		2, 3, 0
+		indices[index + 0] = i;
+		indices[index + 1] = i + 1;
+		indices[index + 2] = i + 2;
 
-	};
+		indices[index + 3] = i + 2;
+		indices[index + 4] = i + 3;
+		indices[index + 5] = i;
 
-	mesh->VertexCount = ARRAYSIZE(vertices);
-	mesh->IndexCount = ARRAYSIZE(indices);
+		index += 6;
+	}
+
+
+	mesh->VertexCount = vertexCount;
+	mesh->IndexCount = triangleCount;
 
 	mesh->AddComponent<VertexBufferComponent<Vertex>>();
-	mesh->GetComponent<VertexBufferComponent<Vertex>>().Initialize(device, vertices, _countof(vertices));
+	mesh->GetComponent<VertexBufferComponent<Vertex>>().Initialize(device, vertices, vertexCount);
 
 	mesh->AddComponent<IndexBufferComponent<std::uint16_t>>();
-	mesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Initialize(device, indices, _countof(indices));
+	mesh->GetComponent<IndexBufferComponent<std::uint16_t>>().Initialize(device, indices, triangleCount);
 
 	return mesh;
 }
