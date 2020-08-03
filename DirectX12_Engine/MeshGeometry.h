@@ -11,7 +11,7 @@ enum Pipeline
 	Transparent,
 	StencilMirror,
 	StencilReflection,
-	Shadow,
+	StencilShadow,
 	Count
 };
 

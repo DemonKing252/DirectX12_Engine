@@ -1,5 +1,5 @@
 #define NumPointLights 1 
-struct PointLight
+struct DirectionalLight
 {
     float3 Position;
     float FallOffStart;
@@ -18,7 +18,7 @@ cbuffer ConstantBuffer : register(b0)
     
     float4 EyeWorldSpace;
     
-    PointLight pLights[NumPointLights];
+    DirectionalLight pLights[NumPointLights];
 }
 
 struct Layout

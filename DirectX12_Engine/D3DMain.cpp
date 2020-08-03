@@ -5,11 +5,11 @@
 DirectX12_Engine::D3DMain.cpp by Liam Blake (C) 2020 All Rights Reserved.
 
 	Created:			 2020-07-20
-	Modified:			 2020-08-02
-	Total Lines of code: 2570
+	Modified:			 2020-08-03
+	Total Lines of code: 2532
 	
 	Last Change:
-		Added a stencil buffer for reflecting opaque objects. The grass grid is now a mirror.
+		Added shadows to each object. They get drawn into the stencil buffer just like the reflections do.
 
 *********************************************************************************/
 

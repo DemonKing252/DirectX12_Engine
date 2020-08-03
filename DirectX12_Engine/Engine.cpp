@@ -65,36 +65,14 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		cylinder->GetComponent<TransformComponent>().SetModelMatrix(model);
 
 		m_meshes[Pipeline::Opaque].push_back(cylinder);
-
+		m_meshes[Pipeline::StencilReflection].push_back(cylinder);
+		m_meshes[Pipeline::StencilShadow].push_back(cylinder);
 
 		ID3D12Resource* temp;
 		ZeroMemory(&temp, sizeof(ID3D12Resource));
 		m_cbvResources[Pipeline::Opaque].push_back(temp);
-
-		auto cylinderReflected = std::make_shared<MeshGeometry>();
-		cylinderReflected = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-
-		cylinderReflected->AddComponent<MaterialComponent>();
-		cylinderReflected->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 0.9f };
-		cylinderReflected->GetComponent<MaterialComponent>().texture.hGPUHandle = m_stoneTex->hGPUHandle;
-		cylinderReflected->GetComponent<MaterialComponent>().texture.m_texHeap = m_stoneTex->m_texResource;
-
-		model = XMMatrixTranslation(Positions[i].x, Positions[i].y, Positions[i].z);
-
-		cylinderReflected->AddComponent<TransformComponent>();
-
-		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-		XMMATRIX R = XMMatrixReflect(planeReflect);
-		
-		cylinderReflected->GetComponent<TransformComponent>().SetModelMatrix(model * R);
-
-		m_meshes[Pipeline::StencilReflection].push_back(cylinderReflected);
-
-
-		ID3D12Resource* temp3;
-		ZeroMemory(&temp3, sizeof(ID3D12Resource));
-		m_cbvResources[Pipeline::StencilReflection].push_back(temp3);
-
+		m_cbvResources[Pipeline::StencilReflection].push_back(temp);
+		m_cbvResources[Pipeline::StencilShadow].push_back(temp);
 
 		// ----------------------
 
@@ -112,33 +90,14 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		sphere->GetComponent<TransformComponent>().SetModelMatrix(model);
 
 		m_meshes[Pipeline::Opaque].push_back(sphere);
+		m_meshes[Pipeline::StencilReflection].push_back(sphere);
+		m_meshes[Pipeline::StencilShadow].push_back(sphere);
 
 		ID3D12Resource* temp2;
 		ZeroMemory(&temp2, sizeof(ID3D12Resource));
 		m_cbvResources[Pipeline::Opaque].push_back(temp2);
-
-		auto sphereReflected = std::make_shared<MeshGeometry>();
-		sphereReflected = geoGen.CreateSphere(m_device.Get(), 0.1f, 30, 40);
-
-		sphereReflected->AddComponent<MaterialComponent>();
-		sphereReflected->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 0.9f };
-		sphereReflected->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
-		sphereReflected->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
-
-		model = XMMatrixTranslation(Positions[i].x, Positions[i].y + 0.6f, Positions[i].z);
-
-		sphereReflected->AddComponent<TransformComponent>();
-
-		planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-		R = XMMatrixReflect(planeReflect);
-
-		sphereReflected->GetComponent<TransformComponent>().SetModelMatrix(model * R);
-
-		m_meshes[Pipeline::StencilReflection].push_back(sphereReflected);
-
-		ID3D12Resource* temp5;
-		ZeroMemory(&temp5, sizeof(ID3D12Resource));
-		m_cbvResources[Pipeline::StencilReflection].push_back(temp5);
+		m_cbvResources[Pipeline::StencilReflection].push_back(temp2);
+		m_cbvResources[Pipeline::StencilShadow].push_back(temp2);
 	}
 
 	{
@@ -158,40 +117,16 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		box->GetComponent<TransformComponent>().SetModelMatrix(model);
 		
 		m_meshes[Pipeline::Opaque].push_back(box);
+		m_meshes[Pipeline::StencilReflection].push_back(box);
+		m_meshes[Pipeline::StencilShadow].push_back(box);
 
 		ID3D12Resource* temp;
 		ZeroMemory(&temp, sizeof(ID3D12Resource));
 		m_cbvResources[Pipeline::Opaque].push_back(temp);
-
-	}
-	{
-		auto box = std::make_shared<MeshGeometry>();
-
-		box = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
-
-		box->AddComponent<MaterialComponent>();
-		box->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		box->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
-		box->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
-
-		XMMATRIX model;
-		model = XMMatrixTranslation(0.0f, 0.125f, 0.0f);
-
-		box->AddComponent<TransformComponent>();
-
-		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-		XMMATRIX R = XMMatrixReflect(planeReflect);
-
-		box->GetComponent<TransformComponent>().SetModelMatrix(model * R);
-
-		m_meshes[Pipeline::StencilReflection].push_back(box);
-
-		ID3D12Resource* temp;
-		ZeroMemory(&temp, sizeof(ID3D12Resource));
 		m_cbvResources[Pipeline::StencilReflection].push_back(temp);
+		m_cbvResources[Pipeline::StencilShadow].push_back(temp);
 
 	}
-
 	{
 		auto grid = std::make_shared<MeshGeometry>();
 	
@@ -210,33 +145,11 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		grid->GetComponent<TransformComponent>().SetModelMatrix(model);
 	
 		m_meshes[Pipeline::Transparent].push_back(grid);
+		m_meshes[Pipeline::StencilMirror].push_back(grid);
 	
 		ID3D12Resource* temp;
 		ZeroMemory(&temp, sizeof(ID3D12Resource));
 		m_cbvResources[Pipeline::Transparent].push_back(temp);
-	}
-
-	{
-		auto grid = std::make_shared<MeshGeometry>();
-
-
-		grid = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f, 6, 10);
-
-		grid->AddComponent<MaterialComponent>();
-		grid->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		grid->GetComponent<MaterialComponent>().texture.hGPUHandle = m_charCoalTex->hGPUHandle;
-		grid->GetComponent<MaterialComponent>().texture.m_texHeap = m_charCoalTex->m_texResource;
-
-		XMMATRIX model;
-		model = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-
-		grid->AddComponent<TransformComponent>();
-		grid->GetComponent<TransformComponent>().SetModelMatrix(model);
-
-		m_meshes[Pipeline::StencilMirror].push_back(grid);
-
-		ID3D12Resource* temp;
-		ZeroMemory(&temp, sizeof(ID3D12Resource));
 		m_cbvResources[Pipeline::StencilMirror].push_back(temp);
 	}
 	
@@ -324,6 +237,40 @@ void Engine::Draw()
 
 		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
+	m_commandList->SetPipelineState(m_pipelineState[Pipeline::StencilShadow].Get());
+	m_commandList->OMSetStencilRef(1);
+
+
+	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilShadow].size(); i++)
+	{
+		auto mesh = m_meshes[Pipeline::StencilShadow];
+
+		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMMATRIX R = XMMatrixReflect(planeReflect);
+		XMVECTOR lightDir = XMVector3Normalize(XMLoadFloat3(&m_constantBuffer->pLight[0].Direction));
+		XMVECTOR refLightDir = XMVector3TransformNormal(lightDir, R);
+		XMVECTOR toMainLight = -XMVector3Normalize(XMLoadFloat3(&m_constantBuffer->pLight[0].Direction));
+		XMMATRIX S = XMMatrixShadow(planeReflect, toMainLight);
+
+		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix() * S;
+		m_constantBuffer->DiffuseAlbedo = { 0.0f, 0.0f, 0.0f, 1.0f };
+		this->UpdateConstants();
+
+		void* data;
+		m_cbvResources[Pipeline::StencilShadow][i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
+		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
+		m_cbvResources[Pipeline::StencilShadow][i]->Unmap(0, nullptr);
+
+		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilShadow][i]->GetGPUVirtualAddress());
+		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+
+		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+
+		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+	}
+
 	m_commandList->SetPipelineState(m_pipelineState[Pipeline::StencilReflection].Get());
 	m_commandList->OMSetStencilRef(1);
 
@@ -331,7 +278,10 @@ void Engine::Draw()
 	{
 		auto mesh = m_meshes[Pipeline::StencilReflection];
 
-		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMMATRIX R = XMMatrixReflect(planeReflect);
+
+		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix() * R;
 		m_constantBuffer->DiffuseAlbedo = mesh[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
 		this->UpdateConstants();
 
@@ -354,8 +304,16 @@ void Engine::Draw()
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::Transparent].size(); i++)
 	{
 		auto mesh = m_meshes[Pipeline::Transparent];
-
-		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		XMVECTOR s, r, t;
+		XMMATRIX m = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		XMFLOAT3 translate;
+		XMMatrixDecompose(&s, &r, &t, m);
+		XMStoreFloat3(&translate, t);
+		// Draw the mirror slightly below to avoid flickering from the shadows and mirrors being
+		// directly overlapped. Comment this line out to see that effect:
+		translate.y += 0.001f;	
+		
+		m_constantBuffer->Model = XMMatrixTranslation(translate.x, translate.y, translate.z);
 		m_constantBuffer->DiffuseAlbedo = mesh[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
 		this->UpdateConstants();
 
@@ -400,11 +358,11 @@ void Engine::UpdateConstants()
 
 	m_constantBuffer->EyeWorldSpace = { Camera::Eye.x, Camera::Eye.y, Camera::Eye.z, 1.0f };
 
-	m_constantBuffer->pLight[0].Position = { 2.0f, 0.5f, 0.0f };
-	m_constantBuffer->pLight[0].Strength = { 1.5f, 1.5f, 1.5f };
+	m_constantBuffer->pLight[0].Position = { 0.0f, 0.0f, 0.0f };
+	m_constantBuffer->pLight[0].Strength = { 0.7f, 0.7f, 0.7f };
 	m_constantBuffer->pLight[0].FallOffStart = 0.1f;
 	m_constantBuffer->pLight[0].FallOffEnd = 15.0f;
-	m_constantBuffer->pLight[0].Direction = { -2.0f, -0.5f, 0.0f };
+	m_constantBuffer->pLight[0].Direction = { cos(XMConvertToRadians(0.25f*m_iCurrentFence)), -1.0f, sin(XMConvertToRadians(0.25f*m_iCurrentFence)) };
 	m_constantBuffer->pLight[0].SpecularStrength = 4.0f;
 
 	m_constantBuffer->View = XMMatrixLookAtLH
@@ -421,6 +379,7 @@ void Engine::UpdateConstants()
 		m_constantBuffer->View *
 		m_constantBuffer->Projection
 	);
+	m_constantBuffer->Model = XMMatrixTranspose(m_constantBuffer->Model);
 }
 
 void Engine::BuildDescriptorHeaps()
@@ -802,6 +761,6 @@ void Engine::AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath)
 
 	shadowPSODesc.DepthStencilState = shadowDSS;
 
-	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&shadowPSODesc, IID_PPV_ARGS(m_pipelineState[Pipeline::Shadow].GetAddressOf())));
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&shadowPSODesc, IID_PPV_ARGS(m_pipelineState[Pipeline::StencilShadow].GetAddressOf())));
 
 }

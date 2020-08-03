@@ -27,7 +27,7 @@ struct MaterialComponent : public Component
 };
 constexpr int NUM_POINT_LIGHTS = 1;
 
-struct PointLight
+struct DirectionalLight
 {
 	XMFLOAT3 Position;
 	float FallOffStart;
@@ -50,7 +50,7 @@ struct ConstantBuffer
 	XMFLOAT4 DiffuseAlbedo;
 	XMFLOAT4 EyeWorldSpace;
 
-	PointLight pLight[NUM_POINT_LIGHTS];
+	DirectionalLight pLight[NUM_POINT_LIGHTS];
 };
 
 struct Camera

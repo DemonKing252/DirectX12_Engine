@@ -1,5 +1,5 @@
 #define NumPointLights 1 
-struct PointLight
+struct DirectionalLight
 {
     float3 Position;
     float FallOffStart;
@@ -22,7 +22,7 @@ cbuffer ConstantBuffer : register(b0)
     
     float4 EyeWorldSpace;
     
-    PointLight pLights[NumPointLights];
+    DirectionalLight pLights[NumPointLights];
 }
 struct Layout
 {
@@ -48,13 +48,13 @@ float4 PSMain(Layout layout) : SV_TARGET
         if (attenuation <= pLights[i].FallOffEnd)
         {
             float3 norm = normalize(layout.normal);
-            float3 lightDirection = normalize(pLights[0].Position - layout.fragPos);
+            float3 lightDirection = normalize(-pLights[0].Direction);
             float3 diff = (dot(norm, lightDirection));
-            diffuse += diff * pLights[i].Strength * ((pLights[i].FallOffEnd - attenuation) / (pLights[i].FallOffEnd - pLights[i].FallOffStart));;
-    
+            diffuse += diff * pLights[i].Strength;
+            
             float3 viewDir = normalize(EyeWorldSpace.xyz - layout.fragPos);
             float3 reflectDir = reflect(-lightDirection, norm);
-            float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32) / (attenuation * attenuation);
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32);
             specular += pLights[i].SpecularStrength * spec * pLights[i].Strength.xyz;
     
         }
@@ -62,5 +62,8 @@ float4 PSMain(Layout layout) : SV_TARGET
     // If the light fall off end is too low it will be less than zero, which will make the surface black. We don't want that!
     float3 totalLight = ambientLight.xyz + clamp(diffuse, 0.0f, 255.0f) + clamp(specular, 0.0f, 255.0f);
     
+    if (DiffuseAlbedo.x <= 0.3f && DiffuseAlbedo.y <= 0.3f && DiffuseAlbedo.z <= 0.3f)
+        return pixelColor * ambientLight * DiffuseAlbedo; // Discard ALL LIGHT if we happen to be drawing a shadow
+        
     return pixelColor * float4(totalLight, 1.0f) * DiffuseAlbedo;
 }

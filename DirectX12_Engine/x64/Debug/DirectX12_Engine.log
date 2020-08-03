@@ -1,2 +1,9 @@
-﻿  Engine.cpp
+﻿  D3DMain.cpp
+  Engine.cpp
+  GeometryGenerator.cpp
+d:\program files (x86)\directx\directx12_engine\directx12_engine\geometrygenerator.cpp(176): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+d:\program files (x86)\directx\directx12_engine\directx12_engine\geometrygenerator.cpp(257): warning C4018: '<': signed/unsigned mismatch
+  MeshGeometry.cpp
+  Win32App.cpp
+  Generating Code...
   DirectX12_Engine.vcxproj -> D:\Program Files (x86)\DirectX\DirectX12_Engine\x64\Debug\DirectX12_Engine.exe
