@@ -27,7 +27,7 @@ void D3DApp::Clean()
 void D3DApp::NewFrame()
 {
 	m_commandAllocator->Reset();
-	m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get());
+	m_commandList->Reset(m_commandAllocator.Get(), nullptr);
 }
 
 void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)

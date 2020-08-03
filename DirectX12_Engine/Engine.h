@@ -39,14 +39,15 @@ public:
 
 private:
 	std::unique_ptr<ConstantBuffer> m_constantBuffer;
-	std::vector<std::shared_ptr<MeshGeometry>> m_meshes;
+	std::vector<std::shared_ptr<MeshGeometry>> m_meshes[Pipeline::Count];
 	
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
 	std::unique_ptr<Texture> m_charCoalTex;
 	std::unique_ptr<Texture> m_glassTex;
 	std::unique_ptr<Texture> m_stoneTex;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState[Pipeline::Count];
 
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_cbvResources;
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_cbvResources[Pipeline::Count];
 
 	static Engine* s_pInstance;
 

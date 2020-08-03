@@ -50,89 +50,194 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 
 	for (UINT i = 0; i < _countof(Positions); i++)
 	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
-
-		auto cylinder = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
-		m_meshes.back() = cylinder;
-
-		m_meshes.back()->AddComponent<MaterialComponent>();
-		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_stoneTex->hGPUHandle;
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_stoneTex->m_texResource;
+		auto cylinder = std::make_shared<MeshGeometry>();
+		cylinder = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+		
+		cylinder->AddComponent<MaterialComponent>();
+		cylinder->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		cylinder->GetComponent<MaterialComponent>().texture.hGPUHandle = m_stoneTex->hGPUHandle;
+		cylinder->GetComponent<MaterialComponent>().texture.m_texHeap = m_stoneTex->m_texResource;
 
 		XMMATRIX model;
 		model = XMMatrixTranslation(Positions[i].x, Positions[i].y, Positions[i].z);
 
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+		cylinder->AddComponent<TransformComponent>();
+		cylinder->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		m_meshes[Pipeline::Opaque].push_back(cylinder);
+
 
 		ID3D12Resource* temp;
 		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
+		m_cbvResources[Pipeline::Opaque].push_back(temp);
+
+		auto cylinderReflected = std::make_shared<MeshGeometry>();
+		cylinderReflected = geoGen.CreateCylinder(m_device.Get(), 0.1f, 0.15f, 1.0f, 30);
+
+		cylinderReflected->AddComponent<MaterialComponent>();
+		cylinderReflected->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 0.9f };
+		cylinderReflected->GetComponent<MaterialComponent>().texture.hGPUHandle = m_stoneTex->hGPUHandle;
+		cylinderReflected->GetComponent<MaterialComponent>().texture.m_texHeap = m_stoneTex->m_texResource;
+
+		model = XMMatrixTranslation(Positions[i].x, Positions[i].y, Positions[i].z);
+
+		cylinderReflected->AddComponent<TransformComponent>();
+
+		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMMATRIX R = XMMatrixReflect(planeReflect);
+		
+		cylinderReflected->GetComponent<TransformComponent>().SetModelMatrix(model * R);
+
+		m_meshes[Pipeline::StencilReflection].push_back(cylinderReflected);
+
+
+		ID3D12Resource* temp3;
+		ZeroMemory(&temp3, sizeof(ID3D12Resource));
+		m_cbvResources[Pipeline::StencilReflection].push_back(temp3);
+
 
 		// ----------------------
 
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
-
-		auto sphere = geoGen.CreateSphere(m_device.Get(), 0.1f, 30, 40);
-		m_meshes.back() = sphere;
-
-		m_meshes.back()->AddComponent<MaterialComponent>(); 
-		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
+		auto sphere = std::make_shared<MeshGeometry>();
+		sphere = geoGen.CreateSphere(m_device.Get(), 0.1f, 30, 40);
+		
+		sphere->AddComponent<MaterialComponent>(); 
+		sphere->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		sphere->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
+		sphere->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
 
 		model = XMMatrixTranslation(Positions[i].x, Positions[i].y+0.6f, Positions[i].z);
 
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+		sphere->AddComponent<TransformComponent>();
+		sphere->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		m_meshes[Pipeline::Opaque].push_back(sphere);
 
 		ID3D12Resource* temp2;
 		ZeroMemory(&temp2, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp2);
+		m_cbvResources[Pipeline::Opaque].push_back(temp2);
+
+		auto sphereReflected = std::make_shared<MeshGeometry>();
+		sphereReflected = geoGen.CreateSphere(m_device.Get(), 0.1f, 30, 40);
+
+		sphereReflected->AddComponent<MaterialComponent>();
+		sphereReflected->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 0.9f };
+		sphereReflected->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
+		sphereReflected->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
+
+		model = XMMatrixTranslation(Positions[i].x, Positions[i].y + 0.6f, Positions[i].z);
+
+		sphereReflected->AddComponent<TransformComponent>();
+
+		planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		R = XMMatrixReflect(planeReflect);
+
+		sphereReflected->GetComponent<TransformComponent>().SetModelMatrix(model * R);
+
+		m_meshes[Pipeline::StencilReflection].push_back(sphereReflected);
+
+		ID3D12Resource* temp5;
+		ZeroMemory(&temp5, sizeof(ID3D12Resource));
+		m_cbvResources[Pipeline::StencilReflection].push_back(temp5);
 	}
 
 	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		auto box = std::make_shared<MeshGeometry>();
 
-		auto box = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
-		m_meshes.back() = box;
-
-		m_meshes.back()->AddComponent<MaterialComponent>();
-		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
+		box = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
+		
+		box->AddComponent<MaterialComponent>();
+		box->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		box->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
+		box->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
 
 		XMMATRIX model;
 		model = XMMatrixTranslation(0.0f, 0.125f, 0.0f);
 	
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+		box->AddComponent<TransformComponent>();
+		box->GetComponent<TransformComponent>().SetModelMatrix(model);
+		
+		m_meshes[Pipeline::Opaque].push_back(box);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources[Pipeline::Opaque].push_back(temp);
+
+	}
+	{
+		auto box = std::make_shared<MeshGeometry>();
+
+		box = geoGen.CreateBox(m_device.Get(), 0.5f, 0.25f, 0.5f);
+
+		box->AddComponent<MaterialComponent>();
+		box->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		box->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
+		box->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
+
+		XMMATRIX model;
+		model = XMMatrixTranslation(0.0f, 0.125f, 0.0f);
+
+		box->AddComponent<TransformComponent>();
+
+		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMMATRIX R = XMMatrixReflect(planeReflect);
+
+		box->GetComponent<TransformComponent>().SetModelMatrix(model * R);
+
+		m_meshes[Pipeline::StencilReflection].push_back(box);
+
+		ID3D12Resource* temp;
+		ZeroMemory(&temp, sizeof(ID3D12Resource));
+		m_cbvResources[Pipeline::StencilReflection].push_back(temp);
+
+	}
+
+	{
+		auto grid = std::make_shared<MeshGeometry>();
+	
+		
+		grid = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f, 6, 10);
+		
+		grid->AddComponent<MaterialComponent>(); 
+		grid->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 0.5f };
+		grid->GetComponent<MaterialComponent>().texture.hGPUHandle = m_charCoalTex->hGPUHandle;
+		grid->GetComponent<MaterialComponent>().texture.m_texHeap = m_charCoalTex->m_texResource;
+	
+		XMMATRIX model;
+		model = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	
+		grid->AddComponent<TransformComponent>();
+		grid->GetComponent<TransformComponent>().SetModelMatrix(model);
+	
+		m_meshes[Pipeline::Transparent].push_back(grid);
 	
 		ID3D12Resource* temp;
 		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
+		m_cbvResources[Pipeline::Transparent].push_back(temp);
 	}
+
 	{
-		m_meshes.push_back(std::make_shared<MeshGeometry>());
+		auto grid = std::make_shared<MeshGeometry>();
 
-		auto grid = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f, 6, 10);
-		m_meshes.back() = grid;
 
-		m_meshes.back()->AddComponent<MaterialComponent>(); 
-		m_meshes.back()->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.hGPUHandle = m_charCoalTex->hGPUHandle;
-		m_meshes.back()->GetComponent<MaterialComponent>().texture.m_texHeap = m_charCoalTex->m_texResource;
+		grid = geoGen.CreateGrid(m_device.Get(), 3.0f, 5.0f, 6, 10);
+
+		grid->AddComponent<MaterialComponent>();
+		grid->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		grid->GetComponent<MaterialComponent>().texture.hGPUHandle = m_charCoalTex->hGPUHandle;
+		grid->GetComponent<MaterialComponent>().texture.m_texHeap = m_charCoalTex->m_texResource;
 
 		XMMATRIX model;
-		model = XMMatrixTranslation(0.0f, -0.0001f, 0.0f);
+		model = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 
-		m_meshes.back()->AddComponent<TransformComponent>();
-		m_meshes.back()->GetComponent<TransformComponent>().SetModelMatrix(model);
+		grid->AddComponent<TransformComponent>();
+		grid->GetComponent<TransformComponent>().SetModelMatrix(model);
+
+		m_meshes[Pipeline::StencilMirror].push_back(grid);
 
 		ID3D12Resource* temp;
 		ZeroMemory(&temp, sizeof(ID3D12Resource));
-		m_cbvResources.push_back(temp);
+		m_cbvResources[Pipeline::StencilMirror].push_back(temp);
 	}
 	
 	BuildConstantBufferViews();
@@ -169,25 +274,104 @@ void Engine::Draw()
 	m_commandList->RSSetScissorRects(1, &m_scissorsRect);
 	m_commandList->SetDescriptorHeaps(1, m_srvDescriptorHeap.GetAddressOf());
 
-	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes.size(); i++)
+	m_commandList->SetPipelineState(m_pipelineState[Pipeline::Opaque].Get());
+
+
+	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::Opaque].size(); i++)
 	{
-		m_constantBuffer->Model = m_meshes[i]->GetComponent<TransformComponent>().GetModelMatrix();
-		m_constantBuffer->DiffuseAlbedo = m_meshes[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
+		auto mesh = m_meshes[Pipeline::Opaque];
+
+		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		m_constantBuffer->DiffuseAlbedo = mesh[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
 		this->UpdateConstants();
 
 		void* data;
-		m_cbvResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
+		m_cbvResources[Pipeline::Opaque][i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
 		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
-		m_cbvResources[i]->Unmap(0, nullptr);
+		m_cbvResources[Pipeline::Opaque][i]->Unmap(0, nullptr);
 
-		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[i]->GetGPUVirtualAddress());
+		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::Opaque][i]->GetGPUVirtualAddress());
 		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_commandList->SetGraphicsRootDescriptorTable(1, m_meshes[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
 	
-		m_commandList->IASetVertexBuffers(0, 1, &m_meshes[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
-		m_commandList->IASetIndexBuffer(&m_meshes[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
 
-		m_commandList->DrawIndexedInstanced(m_meshes[i]->IndexCount, 1, 0, 0, 0);
+		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+	}
+	m_commandList->SetPipelineState(m_pipelineState[Pipeline::StencilMirror].Get());
+	m_commandList->OMSetStencilRef(1);
+
+	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilMirror].size(); i++)
+	{
+		auto mesh = m_meshes[Pipeline::StencilMirror];
+
+		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		m_constantBuffer->DiffuseAlbedo = mesh[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
+		this->UpdateConstants();
+
+		void* data;
+		m_cbvResources[Pipeline::StencilMirror][i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
+		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
+		m_cbvResources[Pipeline::StencilMirror][i]->Unmap(0, nullptr);
+
+		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilMirror][i]->GetGPUVirtualAddress());
+		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+
+		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+
+		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+	}
+	m_commandList->SetPipelineState(m_pipelineState[Pipeline::StencilReflection].Get());
+	m_commandList->OMSetStencilRef(1);
+
+	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilReflection].size(); i++)
+	{
+		auto mesh = m_meshes[Pipeline::StencilReflection];
+
+		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		m_constantBuffer->DiffuseAlbedo = mesh[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
+		this->UpdateConstants();
+
+		void* data;
+		m_cbvResources[Pipeline::StencilReflection][i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
+		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
+		m_cbvResources[Pipeline::StencilReflection][i]->Unmap(0, nullptr);
+
+		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilReflection][i]->GetGPUVirtualAddress());
+		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+
+		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+
+		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+	}
+	m_commandList->SetPipelineState(m_pipelineState[Pipeline::Transparent].Get());
+
+	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::Transparent].size(); i++)
+	{
+		auto mesh = m_meshes[Pipeline::Transparent];
+
+		m_constantBuffer->Model = mesh[i]->GetComponent<TransformComponent>().GetModelMatrix();
+		m_constantBuffer->DiffuseAlbedo = mesh[i]->GetComponent<MaterialComponent>().DiffuseAlbedo;
+		this->UpdateConstants();
+
+		void* data;
+		m_cbvResources[Pipeline::Transparent][i]->Map(0, nullptr, reinterpret_cast<void**>(&data));
+		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
+		m_cbvResources[Pipeline::Transparent][i]->Unmap(0, nullptr);
+
+		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::Transparent][i]->GetGPUVirtualAddress());
+		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+
+		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+
+		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
 
 	// Indicate that the back buffer will be used to present (according to Hooman's slides)
@@ -294,16 +478,19 @@ void Engine::BuildConstantBufferViews()
 	// descriptor table at a time - we would have to store our CBV and SRV handles in the same heap.
 	
 	// This would be really messy and tedious!! ^^^
-	for (std::uint16_t i = 0; i < (std::uint16_t)m_cbvResources.size(); i++)
+	for (int j = 0; j < Pipeline::Count; j++)
 	{
-		ThrowIfFailed(m_device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(AlignedBufferSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(m_cbvResources[i].GetAddressOf())
-		));
+		for (std::uint16_t i = 0; i < (std::uint16_t)m_cbvResources[j].size(); i++)
+		{
+			ThrowIfFailed(m_device->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(AlignedBufferSize),
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(m_cbvResources[j][i].GetAddressOf())
+			));
+		}
 	}
 }
 
@@ -318,7 +505,7 @@ void Engine::BuildShaderResourceViews()
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
 		m_device.Get(),
 		m_commandList.Get(),
-		L"assets/grass.dds",
+		L"assets/glass.dds",
 		m_charCoalTex->m_texResource,
 		m_charCoalTex->m_texHeap
 	));
@@ -471,23 +658,150 @@ void Engine::AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath)
 	rasDesc.MultisampleEnable = false;
 	
 
-	// Official graphics pipeline
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
-	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePSODesc = { 0 };
+	opaquePSODesc.VS = CD3DX12_SHADER_BYTECODE(vs);
+	opaquePSODesc.PS = CD3DX12_SHADER_BYTECODE(ps);
+	opaquePSODesc.pRootSignature = m_rootSignature.Get();
+	opaquePSODesc.SampleDesc.Count = 1;
+	opaquePSODesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaquePSODesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	opaquePSODesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	opaquePSODesc.SampleMask = UINT_MAX;
 
-	psoDesc.RasterizerState = rasDesc;
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs);
-	psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps);
-	psoDesc.SampleDesc.Count = 1;
-	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	psoDesc.InputLayout = { inputLayout, _countof(inputLayout) };
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.pRootSignature = m_rootSignature.Get();
+	//step4:
+	opaquePSODesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	opaquePSODesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	opaquePSODesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	opaquePSODesc.InputLayout = { inputLayout, _countof(inputLayout) };
+	opaquePSODesc.NumRenderTargets = 1;
 
-	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(m_pipelineState.GetAddressOf())));
+	D3D12_RENDER_TARGET_BLEND_DESC transparencyBlendDesc;
+	transparencyBlendDesc.BlendEnable = true;
+	transparencyBlendDesc.LogicOpEnable = false;
+	transparencyBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparencyBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparencyBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparencyBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	//transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_BLUE;
+	//Direct3D supports rendering to up to eight render targets simultaneously.
+	opaquePSODesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
+
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&opaquePSODesc, IID_PPV_ARGS(m_pipelineState[Pipeline::Opaque].GetAddressOf())));
+
+	// ----------
+	//step5:
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparencyPSODesc = opaquePSODesc;
+
+	
+	transparencyBlendDesc.BlendEnable = true;
+	transparencyBlendDesc.LogicOpEnable = false;
+	transparencyBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparencyBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparencyBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparencyBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	//transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_BLUE;
+	//Direct3D supports rendering to up to eight render targets simultaneously.
+	transparencyPSODesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
+
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&transparencyPSODesc, IID_PPV_ARGS(m_pipelineState[Pipeline::Transparent].GetAddressOf())));
+
+	//step6:
+	CD3DX12_BLEND_DESC mirrorBlendState(D3D12_DEFAULT);
+	//// Turn off render target writes.
+	mirrorBlendState.RenderTarget[0].RenderTargetWriteMask = 0;
+
+	D3D12_DEPTH_STENCIL_DESC mirrorDSS;
+	mirrorDSS.DepthEnable = true;
+	mirrorDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; //which portion of the depth/stencil buffer that depth data can be written to.
+	mirrorDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS; //the function the depth test should use
+	mirrorDSS.StencilEnable = true;
+	mirrorDSS.StencilReadMask = 0xff; //This is the portion of the depth/stencil buffer that the stencil test can read from
+	mirrorDSS.StencilWriteMask = 0xff; //This is the portion of the depth/stencil buffer that the stencil test can write to
+
+	// This is a D3D12_DEPTH_STENCILOP_DESC structure which describes what the depth or stencil test is supposed to do with pixels whose surface normals are facing camera (like the frontside of a triangle)
+	mirrorDSS.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP; //when a pixel fragment fails the stencil test.
+	mirrorDSS.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP; // when the stencil test passes but the depth test fails
+	mirrorDSS.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE; // when stencil and depth tests both pass
+	mirrorDSS.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS; //the function the stencil test should use
+
+	// We are not rendering backfacing polygons, so these settings do not matter.
+	mirrorDSS.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	mirrorDSS.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	mirrorDSS.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+	mirrorDSS.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC markMirrorsPsoDesc = opaquePSODesc;
+	markMirrorsPsoDesc.BlendState = mirrorBlendState;
+	markMirrorsPsoDesc.DepthStencilState = mirrorDSS;
+
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&markMirrorsPsoDesc, IID_PPV_ARGS(m_pipelineState[Pipeline::StencilMirror].GetAddressOf())));
+
+	//step7:
+	D3D12_DEPTH_STENCIL_DESC reflectionsDSS;
+	//By using the depth/stencil buffer, we can block the reflected from being rendered on the wall
+	//what happens when you set reflectionsDSS.DepthEnable = false; and reflectionsDSS.StencilEnable = false;
+	//the mirror would not occlude the reflection
+	reflectionsDSS.DepthEnable = true;
+	reflectionsDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	reflectionsDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	//By using the stencil buffer, we can block  the reflected skull from being rendered unless it is being drawn in the mirror.
+	//what happens when you set reflectionsDSS.StencilEnable = false;
+	reflectionsDSS.StencilEnable = true;
+	reflectionsDSS.StencilReadMask = 0xff;
+	reflectionsDSS.StencilWriteMask = 0xff;
+
+	reflectionsDSS.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	//we set the stencil test to only succeed if the value in the stencil buffer equals 1 (stencil ref)
+	reflectionsDSS.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+
+	// We are not rendering backfacing polygons, so these settings do not matter.
+	reflectionsDSS.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC drawReflectionsPsoDesc = opaquePSODesc;
+	drawReflectionsPsoDesc.DepthStencilState = reflectionsDSS;
+	drawReflectionsPsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+	drawReflectionsPsoDesc.RasterizerState.FrontCounterClockwise = true;
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&drawReflectionsPsoDesc, IID_PPV_ARGS(m_pipelineState[Pipeline::StencilReflection].GetAddressOf())))
+
+		//step8:
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC shadowPSODesc = {};
+
+	D3D12_DEPTH_STENCIL_DESC shadowDSS;
+	shadowDSS.DepthEnable = true;
+	shadowDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	shadowDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	shadowDSS.StencilEnable = true;
+	shadowDSS.StencilReadMask = 0xff;
+	shadowDSS.StencilWriteMask = 0xff;
+
+	shadowDSS.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	shadowDSS.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	shadowDSS.FrontFace.StencilPassOp = D3D12_STENCIL_OP_INCR;
+	shadowDSS.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+
+	// We are not rendering backfacing polygons, so these settings do not matter.
+	shadowDSS.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	shadowDSS.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	shadowDSS.BackFace.StencilPassOp = D3D12_STENCIL_OP_INCR;
+	shadowDSS.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+
+	shadowPSODesc = transparencyPSODesc;
+
+	shadowPSODesc.DepthStencilState = shadowDSS;
+
+	ThrowIfFailed(m_device->CreateGraphicsPipelineState(&shadowPSODesc, IID_PPV_ARGS(m_pipelineState[Pipeline::Shadow].GetAddressOf())));
+
 }

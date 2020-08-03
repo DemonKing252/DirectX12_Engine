@@ -5,12 +5,23 @@
 #include "IndexBuffer.h"
 #include "Vertex.h"
 #include <d3d12.h>
+enum Pipeline
+{
+	Opaque,
+	Transparent,
+	StencilMirror,
+	StencilReflection,
+	Shadow,
+	Count
+};
+
 class MeshGeometry : public Entity
 {
 public:
 	MeshGeometry();
 	~MeshGeometry();
 
+	Pipeline Pipeline;
 	UINT IndexStart;
 	UINT IndexCount;
 	UINT VertexCount;

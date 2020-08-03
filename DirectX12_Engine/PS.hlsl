@@ -60,7 +60,7 @@ float4 PSMain(Layout layout) : SV_TARGET
         }
     }
     // If the light fall off end is too low it will be less than zero, which will make the surface black. We don't want that!
-    float4 totalLight = ambientLight + float4(clamp(diffuse, 0.0f, 255.0f), 1.0f) + float4(clamp(specular, 0.0f, 255.0f), 1.0f);
+    float3 totalLight = ambientLight.xyz + clamp(diffuse, 0.0f, 255.0f) + clamp(specular, 0.0f, 255.0f);
     
-    return (pixelColor * totalLight) * DiffuseAlbedo;
+    return pixelColor * float4(totalLight, 1.0f) * DiffuseAlbedo;
 }

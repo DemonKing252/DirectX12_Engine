@@ -51,7 +51,6 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_srvDescriptorHeap;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue;
 
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 	ID3D12DescriptorHeap* m_dsvHeap;
 	ID3D12Resource* m_depthStencilResource;
 public:
