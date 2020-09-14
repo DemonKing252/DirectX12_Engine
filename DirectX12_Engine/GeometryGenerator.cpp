@@ -2,14 +2,17 @@
 
 std::shared_ptr<MeshGeometry> GeometryGenerator::CreateTriangle(ID3D12Device * device)
 {
-	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
+	//
+	// Simple mesh example
+	//
 
+	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
 
 	Vertex vertices[3] =
 	{
-		/*0*/Vertex(XMFLOAT3(-0.5f, -0.5f, +0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)),
-		/*1*/Vertex(XMFLOAT3(+0.0f, +0.5f, +0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		/*2*/Vertex(XMFLOAT3(+0.5f, -0.5f, +0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*0*/Vertex(XMFLOAT3(-0.5f, -0.5f, +0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*1*/Vertex(XMFLOAT3(+0.0f, +0.5f, +0.0f), XMFLOAT2(0.5f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
+		/*2*/Vertex(XMFLOAT3(+0.5f, -0.5f, +0.0f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)),
 	};
 
 	std::uint16_t indices[3] = { 0, 1, 2 };
@@ -273,7 +276,7 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateSphere(ID3D12Device * dev
 {
 	std::shared_ptr<MeshGeometry> mesh = std::make_shared<MeshGeometry>();
 
-	const UINT vertexCount = (stackCount * sliceCount) * 6;
+	const UINT vertexCount = (stackCount * sliceCount) * 4;
 	const UINT indexCount  = (stackCount * sliceCount) * 6;
 
 	Vertex* vertices = new Vertex[vertexCount];
@@ -287,58 +290,84 @@ std::shared_ptr<MeshGeometry> GeometryGenerator::CreateSphere(ID3D12Device * dev
 	float pitch = -90.0f;
 	float yaw = 0.0f;
 	
-	for (UINT i = 0; i < vertexCount; i+=6)
+	for (UINT i = 0; i < vertexCount; i+=4)
 	{
+		XMFLOAT3 aPos[4];
 		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch));
 		Pos.y = radius * (sin_radians(pitch));
 		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch));
 		vertices[i].SetPosition(Pos);
 		vertices[i].SetNormal(Pos);
 		vertices[i].SetUV({ yaw / 360.0f, pitch / 180.0f });
-	
+		aPos[0] = Pos;
+
 		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch + stepDown));
 		Pos.y = radius * (sin_radians(pitch + stepDown));
 		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch + stepDown));
 		vertices[i + 1].SetPosition(Pos);
 		vertices[i + 1].SetNormal(Pos);
 		vertices[i + 1].SetUV({ yaw / 360.0f, (pitch + stepDown) / 180.0f });
-	
+		aPos[1] = Pos;
+
 		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
 		Pos.y = radius * (sin_radians(pitch + stepDown));
 		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
 		vertices[i + 2].SetPosition(Pos);
 		vertices[i + 2].SetNormal(Pos);
 		vertices[i + 2].SetUV({ (yaw + stepOver) / 360.0f, (pitch + stepDown) / 180.0f });
-
-		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
-		Pos.y = radius * (sin_radians(pitch + stepDown));
-		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch + stepDown));
-		vertices[i + 3].SetPosition(Pos);
-		vertices[i + 3].SetNormal(Pos);
-		vertices[i + 3].SetUV({ (yaw + stepOver) / 360.0f, (pitch + stepDown) / 180.0f });
+		aPos[2] = Pos;
 
 		Pos.x = radius * (cos_radians(yaw + stepOver) * cos_radians(pitch));
 		Pos.y = radius * (sin_radians(pitch));
 		Pos.z = radius * (sin_radians(yaw + stepOver) * cos_radians(pitch));
-		vertices[i + 4].SetPosition(Pos);
-		vertices[i + 4].SetNormal(Pos);
-		vertices[i + 4].SetUV({ (yaw + stepOver) / 360.0f, pitch / 180.0f });
+		vertices[i + 3].SetPosition(Pos);
+		vertices[i + 3].SetNormal(Pos);
+		vertices[i + 3].SetUV({ (yaw + stepOver) / 360.0f, pitch / 180.0f });
+		aPos[3] = Pos;
 
-		Pos.x = radius * (cos_radians(yaw) * cos_radians(pitch));
-		Pos.y = radius * (sin_radians(pitch));
-		Pos.z = radius * (sin_radians(yaw) * cos_radians(pitch));
-		vertices[i + 5].SetPosition(Pos);
-		vertices[i + 5].SetNormal(Pos);
-		vertices[i + 5].SetUV({ yaw / 360.0f, pitch / 180.0f });
-	
+		// U Vector:
+		//XMFLOAT3 uNorm;
+		//uNorm.x = aPos[1].x - aPos[0].x;
+		//uNorm.y = aPos[1].y - aPos[0].y;
+		//uNorm.z = aPos[1].z - aPos[0].z;
+		
+		// V Vector:
+		//XMFLOAT3 vNorm;
+		//vNorm.x = aPos[2].x - aPos[0].x;
+		//vNorm.y = aPos[2].y - aPos[0].y;
+		//vNorm.z = aPos[2].z - aPos[0].z;
+		
+		//// Calculate Normals:
+		//XMVECTOR Normal = XMVector3Normalize(XMVector3Cross(XMLoadFloat3(&uNorm), XMLoadFloat3(&vNorm)));
+		
+		//for (int j = 0; j < 4; j++) 
+		//{
+			//XMFLOAT3 Norm;
+			//XMVECTOR N = Util::CalculateAverageNormal(aPos[0], aPos[1], aPos[2]);
+			//XMStoreFloat3(&Norm, Normal);
+		
+			//vertices[i + j].SetNormal(Norm);
+		//}
 		yaw += stepOver;
 
 		if (yaw >= 0.0f && (int)yaw % 360 == 0) { pitch += stepDown; yaw = 0.0f; }
 	}
 
-	for (UINT i = indexCount; i > 0; i--)
-		indices[i] = i;
+	UINT vertexIndex = 0;
+	for (UINT i = 0; i < indexCount; i += 6)
+	{
+		indices[i+0] = vertexIndex;
+		indices[i+1] = vertexIndex+1;
+		indices[i+2] = vertexIndex+2;
 
+		indices[i+3] = vertexIndex+2;
+		indices[i+4] = vertexIndex+3;
+		indices[i+5] = vertexIndex;
+
+		vertexIndex += 4;
+
+	}
+		
 	mesh->VertexCount = vertexCount;
 	mesh->IndexCount = indexCount;
 

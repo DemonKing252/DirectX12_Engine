@@ -10,7 +10,7 @@
 #include "DDSTextureLoader.h"
 #include <cmath>
 #include <vector>
-/* Engine takes care of our game (example: ImGui etc) */
+/* Engine takes care of our game */
 /* D3DApp takes care of setting up D3D */
 
 class Win32App;
@@ -24,7 +24,7 @@ public:
 	~Engine();
 	static Engine* GetApp();
 	
-	void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath) override;
+	void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath) override;
 	void Update() override;
 	void Draw() override;
 	void SwapBuffers() const;
@@ -35,7 +35,7 @@ public:
 	void BuildConstantBufferViews();
 	void BuildShaderResourceViews();
 	void BuildRootSignature();
-	void AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR psPath);
+	void AssemblePipeline(const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath);
 
 private:
 	std::unique_ptr<ConstantBuffer> m_constantBuffer;

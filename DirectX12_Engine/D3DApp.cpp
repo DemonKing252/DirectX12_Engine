@@ -1,5 +1,6 @@
 #include "D3DApp.h"
 #include "Win32App.h"
+#include "D3DCommon.h"
 D3DApp::D3DApp()
 {
 }
@@ -8,7 +9,7 @@ D3DApp::~D3DApp()
 {
 }
 
-void D3DApp::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath)
+void D3DApp::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath)
 {
 }
 
@@ -24,10 +25,54 @@ void D3DApp::Clean()
 {
 }
 
-void D3DApp::NewFrame()
+bool D3DApp::Ready()
+{
+	return m_ready;
+}
+
+void D3DApp::ResetCommandObjects()
 {
 	m_commandAllocator->Reset();
 	m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+}
+
+void D3DApp::OnResize()
+{
+	if (!this->Ready())
+		return;
+
+	/*
+	//WaitForPreviousFrame();
+	//m_commandAllocator->Reset();
+	//m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+	
+	for (int i = 0; i < m_iNumBuffers; i++)
+		m_renderTargets[i].Reset();
+
+	m_depthStencilResource.Reset();
+
+	ThrowIfFailed(m_dxgiSwapChain1->ResizeBuffers(
+		m_iNumBuffers, 
+		Util::ClientSize.x, Util::ClientSize.y, 
+		DXGI_FORMAT_R8G8B8A8_UNORM, 
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+	));
+	m_iBufferIndex = 0;
+
+	this->BuildRenderTargetViews();
+	this->BuildDepthStencilViews();
+	
+	//m_viewPort.TopLeftX = 0;
+	//m_viewPort.TopLeftY = 0;
+	//m_viewPort.Width = Util::ClientSize.x;
+	//m_viewPort.Height = Util::ClientSize.y;
+	//
+	//m_scissorsRect.left = 0;
+	//m_scissorsRect.top = 0;
+	//m_scissorsRect.right = Util::ClientSize.x;
+	//m_scissorsRect.bottom = Util::ClientSize.y;
+
+	*/
 }
 
 void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
@@ -65,6 +110,7 @@ void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 	scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	scd.SampleDesc.Count = 1;
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	ThrowIfFailed(m_dxgiFactory2->CreateSwapChainForHwnd(
 		m_commandQueue.Get(),
@@ -72,7 +118,7 @@ void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 		&scd,
 		nullptr,
 		nullptr,
-		m_dxgiSwapChain1.GetAddressOf()
+		m_dxgiSwapChain.GetAddressOf()
 	));
 
 	m_viewPort.TopLeftX = 0;
@@ -113,7 +159,7 @@ void D3DApp::BuildRenderTargetViews()
 	
 	for (UINT frame = 0; frame < m_iNumBuffers; frame++)
 	{
-		m_dxgiSwapChain1->GetBuffer(frame, IID_PPV_ARGS(m_renderTargets[frame].GetAddressOf()));
+		m_dxgiSwapChain->GetBuffer(frame, IID_PPV_ARGS(m_renderTargets[frame].GetAddressOf()));
 		 
 		m_device->CreateRenderTargetView(
 			m_renderTargets[frame].Get(),
@@ -133,8 +179,8 @@ void D3DApp::BuildDepthStencilViews()
 	// Create the depth/stencil buffer and view.
 	D3D12_RESOURCE_DESC depthStencilDesc = {};
 	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Width = 800;
-	depthStencilDesc.Height = 600;
+	depthStencilDesc.Width = Util::ClientSize.x;
+	depthStencilDesc.Height = Util::ClientSize.y;
 	depthStencilDesc.DepthOrArraySize = 1;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
@@ -161,10 +207,15 @@ void D3DApp::BuildDepthStencilViews()
 	dsvDesc.Format = mDepthStencilFormat;
 	dsvDesc.Texture2D.MipSlice = 0;
 	
-	m_device->CreateDepthStencilView(m_depthStencilResource, &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
+	m_device->CreateDepthStencilView(m_depthStencilResource.Get(), &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_depthStencilResource.Get(),
+		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
+	m_ready = true;
 }
 
-void D3DApp::WaitForPreviousFrame()
+void D3DApp::SyncPreviousFrame()
 {
 	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_iCurrentFence));
 	// Wait for the GPU to finish marking commands up to this fence point

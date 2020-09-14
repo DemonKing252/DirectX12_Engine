@@ -97,10 +97,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="VS.hlsl">
+    <None Include="DefaultPS.hlsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="PS.hlsl">
+    <None Include="DefaultVS.hlsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ShadowPS.hlsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

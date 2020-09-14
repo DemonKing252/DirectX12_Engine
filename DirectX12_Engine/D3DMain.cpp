@@ -24,14 +24,14 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 	else
 	{
-		D3D12App::GetApp()->Initialize(win32App, L"VS.hlsl", L"PS.hlsl");
+		D3D12App::GetApp()->Initialize(win32App, L"DefaultVS.hlsl", L"DefaultPS.hlsl", L"ShadowPS.hlsl");
 		while (!win32App->QuitMessagePosted())
 		{
 			// Process window events
 			win32App->DispatchMessages();
 
 			// Reset the command objects for a new frame
-			D3D12App::GetApp()->NewFrame();
+			D3D12App::GetApp()->ResetCommandObjects();
 
 			// Update
 			D3D12App::GetApp()->Update();
@@ -43,7 +43,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			D3D12App::GetApp()->SwapBuffers();
 
 			// Sync the CPU/GPU to prevent screen tearing/flickering
-			D3D12App::GetApp()->WaitForPreviousFrame();
+			D3D12App::GetApp()->SyncPreviousFrame();
 		}
 
 		win32App->Clean();

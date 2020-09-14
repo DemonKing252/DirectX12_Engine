@@ -173,10 +173,15 @@
     <ClInclude Include="Win32App.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PS.hlsl">
+    <None Include="DefaultPS.hlsl">
       <FileType>Document</FileType>
     </None>
-    <None Include="VS.hlsl">
+    <None Include="DefaultVS.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ShadowPS.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

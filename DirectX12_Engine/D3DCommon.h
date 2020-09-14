@@ -7,9 +7,15 @@
 
 using namespace DirectX;
 
-
 #define cos_radians(_x) cos(static_cast<float>((_x)* XM_PI / 180.0f))
 #define sin_radians(_x) sin(static_cast<float>((_x)* XM_PI / 180.0f))
+
+struct Util
+{
+	static XMFLOAT2 ClientSize;
+
+	static XMVECTOR& CalculateAverageNormal(XMFLOAT3 t1, XMFLOAT3 t2, XMFLOAT3 t3);
+};
 
 // Future Project: Move this to be its own component of entity MeshGeometry
 struct Texture
@@ -22,6 +28,7 @@ struct Texture
 
 struct MaterialComponent : public Component
 {
+	float FresnelFactor;
 	XMFLOAT4 DiffuseAlbedo;
 	Texture texture;
 };
@@ -48,7 +55,8 @@ struct ConstantBuffer
 
 	// Because of issues with my component class messing up byte alignment
 	XMFLOAT4 DiffuseAlbedo;
-	XMFLOAT4 EyeWorldSpace;
+	XMFLOAT3 EyeWorldSpace;
+	float FresnelFactor;
 
 	DirectionalLight pLight[NUM_POINT_LIGHTS];
 };

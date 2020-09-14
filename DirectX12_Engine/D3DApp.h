@@ -35,7 +35,7 @@ protected:
 
 	static const UINT m_iNumBuffers = 3;
 	UINT m_iBufferIndex = m_iNumBuffers - 1;
-
+	BOOL m_ready = false;
 	UINT64 m_iCurrentFence;
 	HANDLE m_fenceEvent;
 
@@ -43,7 +43,7 @@ protected:
 	D3D12_VIEWPORT m_viewPort;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device;
-	Microsoft::WRL::ComPtr<IDXGISwapChain1> m_dxgiSwapChain1;
+	Microsoft::WRL::ComPtr<IDXGISwapChain1> m_dxgiSwapChain;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_renderTargets[m_iNumBuffers];
@@ -52,7 +52,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue;
 
 	ID3D12DescriptorHeap* m_dsvHeap;
-	ID3D12Resource* m_depthStencilResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> m_depthStencilResource;
 public:
 	D3DApp();
 	~D3DApp();
@@ -61,17 +61,19 @@ public:
 	D3DApp(const D3DApp& rhs) = delete;
 	void operator=(const D3DApp& rhs) = delete;
 
-	virtual void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR psPath);
+	virtual void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath);
 	virtual void Update();
 	virtual void Draw();
 	virtual void Clean();
 	
-	void NewFrame();			// Reset the command list and command allocator for a new frame
+	bool Ready();	// ready for resize commands (ie: swap chain and command objects are set up)
+	void ResetCommandObjects();			// Reset the command list and command allocator for a new frame
+	void OnResize();
 	void BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window);
 	void BuildCommandObjects();		
 	void BuildRenderTargetViews();	// For each frame
 	void BuildDepthStencilViews();
 
 	/* Sync the CPU and GPU */
-	void WaitForPreviousFrame();		
+	void SyncPreviousFrame();		
 };

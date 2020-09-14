@@ -8,6 +8,12 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_SIZE:
+		//OutputDebugString((std::to_wstring(HIWORD(lParam))).c_str());
+		//OutputDebugString(L"\n");
+		Util::ClientSize = { static_cast<float>(LOWORD(lParam)), static_cast<float>(HIWORD(lParam)) };
+		D3D12App::GetApp()->OnResize();
+		break;
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -34,6 +40,8 @@ Win32App::~Win32App()
 
 bool Win32App::Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT w, INT h)
 {
+	Util::ClientSize = { (float)w, (float)h };
+
 	this->m_hInstance = hInstance;
 	this->m_windowClass.lpszClassName = m_windowClassName;
 	this->m_windowClass.hInstance = hInstance;
@@ -100,6 +108,7 @@ void Win32App::DispatchMessages()
 				break;
 			}
 		}
+
 	}
 
 	if (m_bLeft)
