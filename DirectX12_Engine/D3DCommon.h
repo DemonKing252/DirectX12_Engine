@@ -59,6 +59,8 @@ struct ConstantBuffer
 	float FresnelFactor;
 
 	DirectionalLight pLight[NUM_POINT_LIGHTS];
+
+	XMFLOAT4 AmbientLight;
 };
 
 struct Camera

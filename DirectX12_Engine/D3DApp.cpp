@@ -160,13 +160,12 @@ void D3DApp::BuildRenderTargetViews()
 	for (UINT frame = 0; frame < m_iNumBuffers; frame++)
 	{
 		m_dxgiSwapChain->GetBuffer(frame, IID_PPV_ARGS(m_renderTargets[frame].GetAddressOf()));
-		 
+
 		m_device->CreateRenderTargetView(
 			m_renderTargets[frame].Get(),
 			nullptr,
 			rtvHandle
 		);
-
 		rtvHandle.Offset(1, rtvSize);
 	}
 }

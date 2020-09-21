@@ -1,8 +1,13 @@
 #include "Win32App.h"
 #include "Engine.h"
 #include "D3DCommon.h"
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT CALLBACK WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+		return true;
+
 	switch ( msg )
 	{
 	case WM_DESTROY:
@@ -53,7 +58,7 @@ bool Win32App::Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT 
 		return false;
 
 	m_hwnd = CreateWindow(m_windowClassName, m_windowName,
-		WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+		WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW,
 		x, y, w, h, nullptr, nullptr, hInstance, nullptr);
 	
 	m_windowDimensions = { x, y, w, h };

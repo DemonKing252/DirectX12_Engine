@@ -10,6 +10,9 @@
 #include "DDSTextureLoader.h"
 #include <cmath>
 #include <vector>
+#include "ImGui/imgui_impl_dx12.h"
+#include "ImGui/imgui_impl_win32.h"
+#include <cassert>
 /* Engine takes care of our game */
 /* D3DApp takes care of setting up D3D */
 
@@ -48,6 +51,16 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState[Pipeline::Count];
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_cbvResources[Pipeline::Count];
+
+	bool m_bShadowsEnabled = true;
+	bool m_bReflectionsEnabled = true;
+	bool m_bVSyncEnabled = true;
+	float clear_color[4] = { 0.678431392f, 0.847058892f, 0.901960850f, 1.000000000f };
+	float light_color[3] = { 0.7f, 0.7f, 0.7f };
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_imguiDescriptorHeap;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE m_himguiCPUHandle;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE m_himguiGPUHandle;
 
 	static Engine* s_pInstance;
 

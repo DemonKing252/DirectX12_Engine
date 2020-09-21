@@ -157,11 +157,25 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	
 	BuildConstantBufferViews();
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+
+	m_himguiCPUHandle = m_imguiDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	m_himguiGPUHandle = m_imguiDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
+	assert(ImGui_ImplWin32_Init(window->Get()));
+	assert(ImGui_ImplDX12_Init(m_device.Get(), 3, DXGI_FORMAT_R8G8B8A8_UNORM, m_imguiDescriptorHeap.Get(), m_himguiCPUHandle, m_himguiGPUHandle));
+	ImGui::StyleColorsDark();
+
+	m_constantBuffer->AmbientLight = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	// View port and scissors rect is in d3dApp since I need the window dimensions.
 }
 
 void Engine::Update()
 {
+
+
 	// { 0, 1, 2, 0, 1, 2, ... }
 	// Next buffer
 	m_iBufferIndex = (m_iBufferIndex + 1) % m_iNumBuffers;
@@ -170,6 +184,49 @@ void Engine::Update()
 
 void Engine::Draw()
 {
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+
+
+	ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
+
+	ImGui::SetWindowPos(ImVec2(0.f, 0.f));
+	ImGui::SetWindowSize(ImVec2(426.f, 360.f));
+	ImGui::Separator();
+
+	float temp[4] = { m_constantBuffer->AmbientLight.x, m_constantBuffer->AmbientLight.y, m_constantBuffer->AmbientLight.z, m_constantBuffer->AmbientLight.w };
+
+	if (ImGui::SliderFloat4("Ambient Light", temp, 0.0f, 1.0f, "%.1f"))
+	{
+		m_constantBuffer->AmbientLight = { temp[0], temp[1], temp[2], temp[3] };
+	}
+
+	ImGui::NewLine();
+	ImGui::Text("Stencil Buffer");               // Display some text (you can use a format strings too)
+	ImGui::Separator();
+	ImGui::Checkbox("Reflections On", &m_bReflectionsEnabled);      // Edit bools storing our window open/close state
+	ImGui::Checkbox("Shadows On", &m_bShadowsEnabled);
+
+	ImGui::NewLine();
+	ImGui::Text("Swap Chain");
+	ImGui::Separator();
+	ImGui::Checkbox("VSync On", &m_bVSyncEnabled);
+	ImGui::SliderFloat4("Render Target Color", clear_color, 0.0f, 1.0f, "%.1f");
+
+	ImGui::NewLine();
+	ImGui::Text("Light Information");
+	ImGui::Separator();
+	ImGui::ColorEdit3("Color", light_color);
+
+	ImGui::NewLine();
+	ImGui::Text("DirectX v12.0 Window (%.0fx%.0f)", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::Text("By: Liam Blake (C) 2020 All Rights Reserved.");
+	ImGui::End();
+
 	// Offset to the current render target based on what buffer we are on.
 	CD3DX12_CPU_DESCRIPTOR_HANDLE currentRTVHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	currentRTVHandle.Offset(1, m_iBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
@@ -180,17 +237,19 @@ void Engine::Draw()
 
 	m_commandList->OMSetRenderTargets(1, &currentRTVHandle, true, &m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-	m_commandList->ClearRenderTargetView(currentRTVHandle, Colors::LightBlue, 0, nullptr);
+	m_commandList->ClearRenderTargetView(currentRTVHandle, clear_color, 0, nullptr);
 	m_commandList->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(),
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 	m_commandList->RSSetViewports(1, &m_viewPort);
 	m_commandList->RSSetScissorRects(1, &m_scissorsRect);
-	m_commandList->SetDescriptorHeaps(1, m_srvDescriptorHeap.GetAddressOf());
 
+	
 	m_commandList->SetPipelineState(m_pipelineState[Pipeline::Opaque].Get());
 
+	
+	m_commandList->SetDescriptorHeaps(1, m_srvDescriptorHeap.GetAddressOf());
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::Opaque].size(); i++)
 	{
@@ -246,6 +305,9 @@ void Engine::Draw()
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilShadow].size(); i++)
 	{
+		if (!m_bShadowsEnabled)
+			break;
+
 		auto mesh = m_meshes[Pipeline::StencilShadow];
 
 		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -280,6 +342,9 @@ void Engine::Draw()
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilReflection].size(); i++)
 	{
+		if (!m_bReflectionsEnabled)
+			break;
+
 		auto mesh = m_meshes[Pipeline::StencilReflection];
 
 		XMVECTOR planeReflect = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -338,6 +403,12 @@ void Engine::Draw()
 		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
 
+	m_commandList->SetDescriptorHeaps(1, m_imguiDescriptorHeap.GetAddressOf());
+
+	ImGui::Render();
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_commandList.Get());
+
+
 	// Indicate that the back buffer will be used to present (according to Hooman's slides)
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -350,7 +421,7 @@ void Engine::Draw()
 
 void Engine::SwapBuffers() const
 {
-	ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
+	ThrowIfFailed(m_dxgiSwapChain->Present(m_bVSyncEnabled, 0));
 }
 
 void Engine::Clean()
@@ -365,12 +436,13 @@ void Engine::UpdateConstants()
 	m_constantBuffer->EyeWorldSpace = { Camera::Eye.x, Camera::Eye.y, Camera::Eye.z };
 
 	m_constantBuffer->pLight[0].Position = { 0.0f, 0.0f, 0.0f };
-	m_constantBuffer->pLight[0].Strength = { 0.7f, 0.7f, 0.0f };
+	m_constantBuffer->pLight[0].Strength = { light_color[0], light_color[1], light_color[2] };
 	m_constantBuffer->pLight[0].FallOffStart = 0.1f;
 	m_constantBuffer->pLight[0].FallOffEnd = 15.0f;
 	m_constantBuffer->pLight[0].Direction = { cos(XMConvertToRadians(0.25f*m_iCurrentFence)), -1.0f, sin(XMConvertToRadians(0.25f*m_iCurrentFence)) };
 	m_constantBuffer->pLight[0].SpecularStrength = 1.0f;
 
+	// Left hand coordinate space
 	m_constantBuffer->View = XMMatrixLookAtLH
 	(
 		XMLoadFloat4(&Camera::Eye),
@@ -415,6 +487,14 @@ void Engine::BuildDescriptorHeaps()
 	srvDescHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;	// Why all 3? We can store all of these (<-) in a heap and upload that to the GPU
 
 	ThrowIfFailed(m_device->CreateDescriptorHeap(&srvDescHeap, IID_PPV_ARGS(m_srvDescriptorHeap.GetAddressOf())));
+
+	D3D12_DESCRIPTOR_HEAP_DESC imgui_desc_heap_desc = {};
+	imgui_desc_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	imgui_desc_heap_desc.NumDescriptors = 1;
+	imgui_desc_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&imgui_desc_heap_desc, IID_PPV_ARGS(m_imguiDescriptorHeap.GetAddressOf())));
+
 }
 
 void Engine::BuildConstantBufferViews()

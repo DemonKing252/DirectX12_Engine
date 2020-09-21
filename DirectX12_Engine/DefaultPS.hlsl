@@ -23,6 +23,8 @@ cbuffer ConstantBuffer : register(b0)
     float FresnelFactor;
     
     DirectionalLight lights[NumPointLights];
+
+	float4 ambientLight;
 }
 struct Layout
 {
@@ -37,8 +39,6 @@ Texture2D tex : TEXTURE : register(t0);
 float4 PSMain(Layout layout) : SV_TARGET
 {
     float4 pixelColor = tex.Sample(samplerState, layout.texCoord);
-    
-    float4 ambientLight = float4(0.3f, 0.3f, 0.3f, 1.0f);
     
     float attenuation = length(lights[0].Position - layout.fragPos);
     

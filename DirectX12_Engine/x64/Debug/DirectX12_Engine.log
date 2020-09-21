@@ -1,13 +1,5 @@
-﻿  D3DApp.cpp
-d:\program files (x86)\directx\directx12_engine\directx12_engine\d3dapp.cpp(126): warning C4244: '=': conversion from 'LONG' to 'FLOAT', possible loss of data
-d:\program files (x86)\directx\directx12_engine\directx12_engine\d3dapp.cpp(127): warning C4244: '=': conversion from 'LONG' to 'FLOAT', possible loss of data
-d:\program files (x86)\directx\directx12_engine\directx12_engine\d3dapp.cpp(182): warning C4244: '=': conversion from 'float' to 'UINT64', possible loss of data
-d:\program files (x86)\directx\directx12_engine\directx12_engine\d3dapp.cpp(183): warning C4244: '=': conversion from 'float' to 'UINT', possible loss of data
-  D3DMain.cpp
+﻿  D3DMain.cpp
   Engine.cpp
-  GeometryGenerator.cpp
-d:\program files (x86)\directx\directx12_engine\directx12_engine\geometrygenerator.cpp(179): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-d:\program files (x86)\directx\directx12_engine\directx12_engine\geometrygenerator.cpp(260): warning C4018: '<': signed/unsigned mismatch
   Win32App.cpp
   Generating Code...
-  DirectX12_Engine.vcxproj -> D:\Program Files (x86)\DirectX\DirectX12_Engine\x64\Debug\DirectX12_Engine.exe
+  DirectX12_Engine.vcxproj -> C:\Users\Demon\OneDrive\Documents\GitHub\DirectX12_Engine\x64\Debug\DirectX12_Engine.exe
