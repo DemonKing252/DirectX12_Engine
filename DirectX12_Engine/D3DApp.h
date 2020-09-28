@@ -12,6 +12,8 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+
+class GameTimer;
 /* Kind of a lazy way of doing it. But not checking hresults is a big no no! */
 #define ThrowIfFailed(hr)	\
 {							\
@@ -62,7 +64,7 @@ public:
 	void operator=(const D3DApp& rhs) = delete;
 
 	virtual void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath);
-	virtual void Update();
+	virtual void Update(GameTimer& gt);
 	virtual void Draw();
 	virtual void Clean();
 	

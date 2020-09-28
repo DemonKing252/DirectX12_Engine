@@ -73,7 +73,7 @@ void Win32App::Clean()
 	DestroyWindow(m_hwnd);
 }
 
-void Win32App::DispatchMessages()
+void Win32App::DispatchMessages(GameTimer& gt)
 {
 	while (PeekMessage(&m_msg, 0, 0, 0, PM_REMOVE))
 	{

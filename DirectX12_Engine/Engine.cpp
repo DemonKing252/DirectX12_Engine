@@ -22,14 +22,14 @@ Engine * Engine::GetApp()
 
 void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath)
 {
-	BuildDeviceAndSwapChain(window);
-	BuildCommandObjects();
-	BuildDescriptorHeaps();
-	BuildRenderTargetViews();
-	BuildDepthStencilViews();
-	BuildShaderResourceViews();
-	BuildRootSignature();
-	AssemblePipeline(vsPath, dafaultpsPath, shadowpsPath);
+	this->BuildDeviceAndSwapChain(window);
+	this->BuildCommandObjects();
+	this->BuildDescriptorHeaps();
+	this->BuildRenderTargetViews();
+	this->BuildDepthStencilViews();
+	this->BuildShaderResourceViews();
+	this->BuildRootSignature();
+	this->AssemblePipeline(vsPath, dafaultpsPath, shadowpsPath);
 
 	GeometryGenerator geoGen;
 	
@@ -172,9 +172,10 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	// View port and scissors rect is in d3dApp since I need the window dimensions.
 }
 
-void Engine::Update()
+void Engine::Update(GameTimer& gt)
 {
-
+	OutputDebugString(std::to_wstring(gt.GetTime()).c_str());
+	OutputDebugString(L"\n");
 
 	// { 0, 1, 2, 0, 1, 2, ... }
 	// Next buffer
@@ -505,7 +506,6 @@ void Engine::BuildConstantBufferViews()
 	UINT AlignedBufferSize = 0U;
 		
 	// Liam's Note:
-	// What's happening here? 
 	// We have to determine an allligned size for our constant buffer where our constant buffer is a multiple of 256 bytes.
 	// Remember that ALL constant buffers have to be a multiple of 256 bytes. No more AND No less!!!
 	// std::ceil rounds up to the next whole integer since we can't have slightly less memory allocated than what is needed in our CB.

@@ -13,6 +13,7 @@
 #include "ImGui/imgui_impl_dx12.h"
 #include "ImGui/imgui_impl_win32.h"
 #include <cassert>
+#include "GameTimer.h"
 /* Engine takes care of our game */
 /* D3DApp takes care of setting up D3D */
 
@@ -28,7 +29,7 @@ public:
 	static Engine* GetApp();
 	
 	void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath) override;
-	void Update() override;
+	void Update(GameTimer& gt) override;
 	void Draw() override;
 	void SwapBuffers() const;
 	void Clean() override;

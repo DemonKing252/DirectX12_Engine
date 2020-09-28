@@ -148,6 +148,7 @@
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="EntityComponentSystem.cpp" />
+    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EntityComponentSystem.h" />
+    <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />

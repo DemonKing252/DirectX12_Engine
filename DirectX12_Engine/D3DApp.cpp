@@ -13,7 +13,7 @@ void D3DApp::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 {
 }
 
-void D3DApp::Update()
+void D3DApp::Update(GameTimer& gt)
 {
 }
 
@@ -154,18 +154,22 @@ void D3DApp::BuildCommandObjects()
 
 void D3DApp::BuildRenderTargetViews()
 {
+	// create a CPU descriptor heandle that points to the beggining of the render target view descriptor heap
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	const UINT rtvSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	
 	for (UINT frame = 0; frame < m_iNumBuffers; frame++)
 	{
+		// get the back buffer address in the swap chain
 		m_dxgiSwapChain->GetBuffer(frame, IID_PPV_ARGS(m_renderTargets[frame].GetAddressOf()));
 
+		// create a render target with the back buffer address
 		m_device->CreateRenderTargetView(
 			m_renderTargets[frame].Get(),
 			nullptr,
 			rtvHandle
 		);
+		// point to the next descriptor in the heap 
 		rtvHandle.Offset(1, rtvSize);
 	}
 }

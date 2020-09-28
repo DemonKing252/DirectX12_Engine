@@ -1,6 +1,9 @@
 #pragma once
 #include <Windows.h>
 #include <DirectXMath.h>
+#include <ctime>
+#include <string>
+#include "GameTimer.h"
 using namespace DirectX;
 class Win32App
 {
@@ -27,7 +30,7 @@ public:
 	bool Initialize(HINSTANCE hInstance, int lpCmdShow, INT x, INT y, INT w, INT h);
 	void Clean();
 
-	void DispatchMessages();
+	void DispatchMessages(GameTimer& gt);
 
 	HWND Get() const;
 
