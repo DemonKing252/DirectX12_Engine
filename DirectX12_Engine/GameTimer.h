@@ -7,7 +7,7 @@ public:
 	~GameTimer();
 
 	float GetDeltaTime() const;
-	float GetTime() const;
+	float GetTimeNow() const;
 	
 	void Reset();
 	void Start();

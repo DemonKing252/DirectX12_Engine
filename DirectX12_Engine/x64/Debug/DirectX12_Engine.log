@@ -1,4 +1,2 @@
-﻿  D3DMain.cpp
-c:\users\demon\onedrive\documents\github\directx12_engine\directx12_engine\d3dmain.cpp(36): warning C4244: '=': conversion from 'clock_t' to 'float', possible loss of data
-c:\users\demon\onedrive\documents\github\directx12_engine\directx12_engine\d3dmain.cpp(56): warning C4244: '=': conversion from 'clock_t' to 'float', possible loss of data
+﻿  Engine.cpp
   DirectX12_Engine.vcxproj -> C:\Users\Demon\OneDrive\Documents\GitHub\DirectX12_Engine\x64\Debug\DirectX12_Engine.exe

@@ -14,7 +14,7 @@ float GameTimer::GetDeltaTime() const
 	return deltaTime;
 }
 
-float GameTimer::GetTime() const
+float GameTimer::GetTimeNow() const
 {
 	return time;
 }

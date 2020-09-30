@@ -9,19 +9,19 @@ D3DApp::~D3DApp()
 {
 }
 
-void D3DApp::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath)
+void D3DApp::Initialize(GameTimer* gameTimer, const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath)
 {
 }
 
-void D3DApp::Update(GameTimer& gt)
+void D3DApp::Update(GameTimer* gameTimer)
 {
 }
 
-void D3DApp::Draw()
+void D3DApp::Draw(GameTimer* gameTimer)
 {
 }
 
-void D3DApp::Clean()
+void D3DApp::Clean(GameTimer* gameTimer)
 {
 }
 
@@ -32,8 +32,8 @@ bool D3DApp::Ready()
 
 void D3DApp::ResetCommandObjects()
 {
-	m_commandAllocator->Reset();
-	m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+	m_d3dCommandAllocator->Reset();
+	m_d3dCommandList->Reset(m_d3dCommandAllocator.Get(), nullptr);
 }
 
 void D3DApp::OnResize()
@@ -84,6 +84,21 @@ void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 
 	ThrowIfFailed(CreateDXGIFactory(IID_PPV_ARGS(m_dxgiFactory2.GetAddressOf())));
 
+
+	IDXGIAdapter* adapter = nullptr;
+	UINT i = 0;
+	while (m_dxgiFactory2->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND)
+	{
+		DXGI_ADAPTER_DESC adapterDesc;
+		ThrowIfFailed(adapter->GetDesc(&adapterDesc));
+
+		OutputDebugString(adapterDesc.Description);
+
+		m_adapters.push_back(adapterDesc.Description);
+		i++;
+	}
+
+
 	ZeroMemory(m_device.GetAddressOf(), sizeof(ID3D12Device));
 
 	ThrowIfFailed(D3D12CreateDevice(
@@ -99,7 +114,7 @@ void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 
 	ThrowIfFailed(m_device->CreateCommandQueue(
 		&cmdQueueDesc,
-		IID_PPV_ARGS(m_commandQueue.GetAddressOf())
+		IID_PPV_ARGS(m_d3dCommandQueue.GetAddressOf())
 	));
 	
 	DXGI_SWAP_CHAIN_DESC1 scd;
@@ -113,7 +128,7 @@ void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	ThrowIfFailed(m_dxgiFactory2->CreateSwapChainForHwnd(
-		m_commandQueue.Get(),
+		m_d3dCommandQueue.Get(),
 		window->Get(),
 		&scd,
 		nullptr,
@@ -136,17 +151,17 @@ void D3DApp::BuildDeviceAndSwapChain(const std::shared_ptr<Win32App> window)
 
 void D3DApp::BuildCommandObjects()
 {
-	ThrowIfFailed(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_commandAllocator.GetAddressOf())));
+	ThrowIfFailed(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_d3dCommandAllocator.GetAddressOf())));
 
 	ThrowIfFailed(m_device->CreateCommandList(
 		0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		m_commandAllocator.Get(),
+		m_d3dCommandAllocator.Get(),
 		nullptr,
-		IID_PPV_ARGS(m_commandList.GetAddressOf())
+		IID_PPV_ARGS(m_d3dCommandList.GetAddressOf())
 	));
 	// d3d doc states that this should be closed before the main loop
-	m_commandList->Close();
+	m_d3dCommandList->Close();
 
 	ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_fence.GetAddressOf())));
 	m_fenceEvent = CreateEvent(0, 0, 0, 0);
@@ -155,7 +170,7 @@ void D3DApp::BuildCommandObjects()
 void D3DApp::BuildRenderTargetViews()
 {
 	// create a CPU descriptor heandle that points to the beggining of the render target view descriptor heap
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_d3dRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	const UINT rtvSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	
 	for (UINT frame = 0; frame < m_iNumBuffers; frame++)
@@ -176,6 +191,9 @@ void D3DApp::BuildRenderTargetViews()
 
 void D3DApp::BuildDepthStencilViews()
 {
+	m_d3dCommandAllocator->Reset();
+	m_d3dCommandList->Reset(m_d3dCommandAllocator.Get(), nullptr);
+
 	// Depth Stencil Resources:
 
 	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -209,18 +227,24 @@ void D3DApp::BuildDepthStencilViews()
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Format = mDepthStencilFormat;
 	dsvDesc.Texture2D.MipSlice = 0;
-	
+
 	m_device->CreateDepthStencilView(m_depthStencilResource.Get(), &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_depthStencilResource.Get(),
+	m_d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_depthStencilResource.Get(),
 		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+	
+	ThrowIfFailed(m_d3dCommandList->Close());
+	ID3D12CommandList* cmdLists[] = { m_d3dCommandList.Get() };
+	m_d3dCommandQueue->ExecuteCommandLists(1, cmdLists);
+
+	this->SyncPreviousFrame();
 
 	m_ready = true;
 }
 
 void D3DApp::SyncPreviousFrame()
 {
-	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_iCurrentFence));
+	ThrowIfFailed(m_d3dCommandQueue->Signal(m_fence.Get(), m_iCurrentFence));
 	// Wait for the GPU to finish marking commands up to this fence point
 	if (m_fence->GetCompletedValue() < m_iCurrentFence)
 	{

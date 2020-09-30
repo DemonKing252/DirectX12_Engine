@@ -20,7 +20,7 @@ Engine * Engine::GetApp()
 	return s_pInstance;
 }
 
-void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath)
+void Engine::Initialize(GameTimer* gameTimer, const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath)
 {
 	this->BuildDeviceAndSwapChain(window);
 	this->BuildCommandObjects();
@@ -56,8 +56,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		cylinder->AddComponent<MaterialComponent>();
 		cylinder->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		cylinder->GetComponent<MaterialComponent>().FresnelFactor = 2.0f;
-		cylinder->GetComponent<MaterialComponent>().texture.hGPUHandle = m_stoneTex->hGPUHandle;
-		cylinder->GetComponent<MaterialComponent>().texture.m_texHeap = m_stoneTex->m_texResource;
+		cylinder->GetComponent<MaterialComponent>().texture.hGPUHandle = m_textureMap["roughstone"]->hGPUHandle;
+		cylinder->GetComponent<MaterialComponent>().texture.m_texHeap = m_textureMap["roughstone"]->m_texResource;
 
 		XMMATRIX model;
 		model = XMMatrixTranslation(Positions[i].x, Positions[i].y, Positions[i].z);
@@ -83,16 +83,21 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		sphere->AddComponent<MaterialComponent>(); 
 		sphere->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		sphere->GetComponent<MaterialComponent>().FresnelFactor = 2.0f;
-		sphere->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
-		sphere->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
+		sphere->GetComponent<MaterialComponent>().texture.hGPUHandle = m_textureMap["stone"]->hGPUHandle;
+		sphere->GetComponent<MaterialComponent>().texture.m_texHeap = m_textureMap["stone"]->m_texResource;
 
 		model = XMMatrixTranslation(Positions[i].x, Positions[i].y+0.6f, Positions[i].z);
 
 		sphere->AddComponent<TransformComponent>();
 		sphere->GetComponent<TransformComponent>().SetModelMatrix(model);
-
+		
+		// Create a physical object
 		m_meshes[Pipeline::Opaque].push_back(sphere);
+
+		// Reflectable by mirrors
 		m_meshes[Pipeline::StencilReflection].push_back(sphere);
+
+		// Create a shadow for this 
 		m_meshes[Pipeline::StencilShadow].push_back(sphere);
 
 		ID3D12Resource* temp2;
@@ -110,8 +115,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		box->AddComponent<MaterialComponent>();
 		box->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		box->GetComponent<MaterialComponent>().FresnelFactor = 2.0f;
-		box->GetComponent<MaterialComponent>().texture.hGPUHandle = m_glassTex->hGPUHandle;
-		box->GetComponent<MaterialComponent>().texture.m_texHeap = m_glassTex->m_texResource;
+		box->GetComponent<MaterialComponent>().texture.hGPUHandle = m_textureMap["stone"]->hGPUHandle;
+		box->GetComponent<MaterialComponent>().texture.m_texHeap = m_textureMap["stone"]->m_texResource;
 
 		XMMATRIX model;
 		model = XMMatrixTranslation(0.0f, 0.125f, 0.0f);
@@ -137,8 +142,8 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 		grid->AddComponent<MaterialComponent>(); 
 		grid->GetComponent<MaterialComponent>().DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 0.5f };
 		grid->GetComponent<MaterialComponent>().FresnelFactor = 2.0f;
-		grid->GetComponent<MaterialComponent>().texture.hGPUHandle = m_charCoalTex->hGPUHandle;
-		grid->GetComponent<MaterialComponent>().texture.m_texHeap = m_charCoalTex->m_texResource;
+		grid->GetComponent<MaterialComponent>().texture.hGPUHandle = m_textureMap["glass"]->hGPUHandle;
+		grid->GetComponent<MaterialComponent>().texture.m_texHeap = m_textureMap["glass"]->m_texResource;
 	
 		XMMATRIX model;
 		model = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
@@ -161,6 +166,10 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 
+	font = io.Fonts->AddFontFromFileTTF("assets/arial.ttf", 14.0f);
+
+	IM_ASSERT(font);
+
 	m_himguiCPUHandle = m_imguiDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	m_himguiGPUHandle = m_imguiDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 
@@ -172,22 +181,29 @@ void Engine::Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vs
 	// View port and scissors rect is in d3dApp since I need the window dimensions.
 }
 
-void Engine::Update(GameTimer& gt)
+void Engine::Update(GameTimer* gameTimer)
 {
-	OutputDebugString(std::to_wstring(gt.GetTime()).c_str());
-	OutputDebugString(L"\n");
+	//OutputDebugString(L"\tTime Now: ");
+	//OutputDebugString(std::to_wstring(gameTimer->GetTimeNow()).c_str());
+	//
+	//OutputDebugString(L"Delta Time: ");
+	//OutputDebugString(std::to_wstring(gameTimer->GetDeltaTime()).c_str());
+	//OutputDebugString()
+	//OutputDebugString(L"\n");
 
 	// { 0, 1, 2, 0, 1, 2, ... }
 	// Next buffer
 	m_iBufferIndex = (m_iBufferIndex + 1) % m_iNumBuffers;
 	// bufferIndex++; if (bufferIndex == 3) bufferIndex = 0;
 }
+/**Don´t forget to use delete[]*/
 
-void Engine::Draw()
+void Engine::Draw(GameTimer* gameTimer)
 {
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+	ImGui::NewFrame();	
+	ImGui::PushFont(font);
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 
@@ -195,7 +211,7 @@ void Engine::Draw()
 	ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
 
 	ImGui::SetWindowPos(ImVec2(0.f, 0.f));
-	ImGui::SetWindowSize(ImVec2(426.f, 360.f));
+	ImGui::SetWindowSize(ImVec2(426.f, 448.f));
 	ImGui::Separator();
 
 	float temp[4] = { m_constantBuffer->AmbientLight.x, m_constantBuffer->AmbientLight.y, m_constantBuffer->AmbientLight.z, m_constantBuffer->AmbientLight.w };
@@ -206,13 +222,13 @@ void Engine::Draw()
 	}
 
 	ImGui::NewLine();
-	ImGui::Text("Stencil Buffer");               // Display some text (you can use a format strings too)
+	ImGui::Text("Stencil Buffer:");               // Display some text (you can use a format strings too)
 	ImGui::Separator();
 	ImGui::Checkbox("Reflections On", &m_bReflectionsEnabled);      // Edit bools storing our window open/close state
 	ImGui::Checkbox("Shadows On", &m_bShadowsEnabled);
 
 	ImGui::NewLine();
-	ImGui::Text("Swap Chain");
+	ImGui::Text("Swap Chain:");
 	ImGui::Separator();
 	ImGui::Checkbox("VSync On", &m_bVSyncEnabled);
 	ImGui::SliderFloat4("Render Target Color", clear_color, 0.0f, 1.0f, "%.1f");
@@ -223,34 +239,47 @@ void Engine::Draw()
 	ImGui::ColorEdit3("Color", light_color);
 
 	ImGui::NewLine();
+	ImGui::Text("Adapters Detected:");
+	ImGui::Separator();
+	for (auto adapter : m_adapters)
+	{
+		std::string s(adapter.begin(), adapter.end());
+
+		ImGui::Text(s.c_str());
+	}
+
+	
+	ImGui::NewLine();
 	ImGui::Text("DirectX v12.0 Window (%.0fx%.0f)", ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::Text("By: Liam Blake (C) 2020 All Rights Reserved.");
+
+	ImGui::PopFont();
 	ImGui::End();
 
 	// Offset to the current render target based on what buffer we are on.
-	CD3DX12_CPU_DESCRIPTOR_HANDLE currentRTVHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE currentRTVHandle(m_d3dRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	currentRTVHandle.Offset(1, m_iBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
 	// Indicate that the back buffer will be used as a render target (according to Hooman's slides)
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+	m_d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	m_commandList->OMSetRenderTargets(1, &currentRTVHandle, true, &m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
+	m_d3dCommandList->OMSetRenderTargets(1, &currentRTVHandle, true, &m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-	m_commandList->ClearRenderTargetView(currentRTVHandle, clear_color, 0, nullptr);
-	m_commandList->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(),
+	m_d3dCommandList->ClearRenderTargetView(currentRTVHandle, clear_color, 0, nullptr);
+	m_d3dCommandList->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(),
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
-	m_commandList->RSSetViewports(1, &m_viewPort);
-	m_commandList->RSSetScissorRects(1, &m_scissorsRect);
+	m_d3dCommandList->SetGraphicsRootSignature(m_rootSignature.Get());
+	m_d3dCommandList->RSSetViewports(1, &m_viewPort);
+	m_d3dCommandList->RSSetScissorRects(1, &m_scissorsRect);
 
 	
-	m_commandList->SetPipelineState(m_pipelineState[Pipeline::Opaque].Get());
+	m_d3dCommandList->SetPipelineState(m_pipelineState[Pipeline::Opaque].Get());
 
 	
-	m_commandList->SetDescriptorHeaps(1, m_srvDescriptorHeap.GetAddressOf());
+	m_d3dCommandList->SetDescriptorHeaps(1, m_d3dSRVDescriptorHeap.GetAddressOf());
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::Opaque].size(); i++)
 	{
@@ -266,17 +295,17 @@ void Engine::Draw()
 		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
 		m_cbvResources[Pipeline::Opaque][i]->Unmap(0, nullptr);
 
-		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::Opaque][i]->GetGPUVirtualAddress());
-		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+		m_d3dCommandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::Opaque][i]->GetGPUVirtualAddress());
+		m_d3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_d3dCommandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
 	
-		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
-		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+		m_d3dCommandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_d3dCommandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
 
-		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+		m_d3dCommandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
-	m_commandList->SetPipelineState(m_pipelineState[Pipeline::StencilMirror].Get());
-	m_commandList->OMSetStencilRef(1);
+	m_d3dCommandList->SetPipelineState(m_pipelineState[Pipeline::StencilMirror].Get());
+	m_d3dCommandList->OMSetStencilRef(1);
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilMirror].size(); i++)
 	{
@@ -292,17 +321,17 @@ void Engine::Draw()
 		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
 		m_cbvResources[Pipeline::StencilMirror][i]->Unmap(0, nullptr);
 
-		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilMirror][i]->GetGPUVirtualAddress());
-		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+		m_d3dCommandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilMirror][i]->GetGPUVirtualAddress());
+		m_d3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_d3dCommandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
 
-		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
-		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+		m_d3dCommandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_d3dCommandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
 
-		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+		m_d3dCommandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
-	m_commandList->SetPipelineState(m_pipelineState[Pipeline::StencilShadow].Get());
-	m_commandList->OMSetStencilRef(1);
+	m_d3dCommandList->SetPipelineState(m_pipelineState[Pipeline::StencilShadow].Get());
+	m_d3dCommandList->OMSetStencilRef(1);
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilShadow].size(); i++)
 	{
@@ -328,18 +357,18 @@ void Engine::Draw()
 		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
 		m_cbvResources[Pipeline::StencilShadow][i]->Unmap(0, nullptr);
 
-		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilShadow][i]->GetGPUVirtualAddress());
-		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+		m_d3dCommandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilShadow][i]->GetGPUVirtualAddress());
+		m_d3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_d3dCommandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
 
-		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
-		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+		m_d3dCommandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_d3dCommandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
 
-		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+		m_d3dCommandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
 
-	m_commandList->SetPipelineState(m_pipelineState[Pipeline::StencilReflection].Get());
-	m_commandList->OMSetStencilRef(1);
+	m_d3dCommandList->SetPipelineState(m_pipelineState[Pipeline::StencilReflection].Get());
+	m_d3dCommandList->OMSetStencilRef(1);
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::StencilReflection].size(); i++)
 	{
@@ -361,16 +390,16 @@ void Engine::Draw()
 		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
 		m_cbvResources[Pipeline::StencilReflection][i]->Unmap(0, nullptr);
 
-		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilReflection][i]->GetGPUVirtualAddress());
-		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+		m_d3dCommandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::StencilReflection][i]->GetGPUVirtualAddress());
+		m_d3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_d3dCommandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
 
-		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
-		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+		m_d3dCommandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_d3dCommandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
 
-		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+		m_d3dCommandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
-	m_commandList->SetPipelineState(m_pipelineState[Pipeline::Transparent].Get());
+	m_d3dCommandList->SetPipelineState(m_pipelineState[Pipeline::Transparent].Get());
 
 	for (std::uint16_t i = 0; i < (std::uint16_t)m_meshes[Pipeline::Transparent].size(); i++)
 	{
@@ -394,40 +423,41 @@ void Engine::Draw()
 		CopyMemory(data, m_constantBuffer.get(), sizeof(ConstantBuffer));
 		m_cbvResources[Pipeline::Transparent][i]->Unmap(0, nullptr);
 
-		m_commandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::Transparent][i]->GetGPUVirtualAddress());
-		m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_commandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
+		m_d3dCommandList->SetGraphicsRootConstantBufferView(0, m_cbvResources[Pipeline::Transparent][i]->GetGPUVirtualAddress());
+		m_d3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_d3dCommandList->SetGraphicsRootDescriptorTable(1, mesh[i]->GetComponent<MaterialComponent>().texture.hGPUHandle);
 
-		m_commandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
-		m_commandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
+		m_d3dCommandList->IASetVertexBuffers(0, 1, &mesh[i]->GetComponent<VertexBufferComponent<Vertex>>().Get());
+		m_d3dCommandList->IASetIndexBuffer(&mesh[i]->GetComponent<IndexBufferComponent<std::uint16_t>>().Get());
 
-		m_commandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
+		m_d3dCommandList->DrawIndexedInstanced(mesh[i]->IndexCount, 1, 0, 0, 0);
 	}
 
-	m_commandList->SetDescriptorHeaps(1, m_imguiDescriptorHeap.GetAddressOf());
+	m_d3dCommandList->SetDescriptorHeaps(1, m_imguiDescriptorHeap.GetAddressOf());
 
 	ImGui::Render();
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_commandList.Get());
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_d3dCommandList.Get());
 
 
 	// Indicate that the back buffer will be used to present (according to Hooman's slides)
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+	m_d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		m_renderTargets[m_iBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
-	m_commandList->Close();
+	m_d3dCommandList->Close();
 
-	ID3D12CommandList* cmdLists[] = { m_commandList.Get() };
-	m_commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+	ID3D12CommandList* cmdLists[] = { m_d3dCommandList.Get() };
+	m_d3dCommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 }
 
-void Engine::SwapBuffers() const
+void Engine::SwapBuffers(GameTimer* gameTimer) const
 {
 	ThrowIfFailed(m_dxgiSwapChain->Present(m_bVSyncEnabled, 0));
 }
 
-void Engine::Clean()
+void Engine::Clean(GameTimer* gameTimer)
 {
-	SyncPreviousFrame();
+	this->SyncPreviousFrame();
+	gameTimer->Reset();
 }
 
 void Engine::UpdateConstants()
@@ -470,7 +500,7 @@ void Engine::BuildDescriptorHeaps()
 	rtvDescHeapDesc.NumDescriptors = m_iNumBuffers;
 	rtvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
-	ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvDescHeapDesc, IID_PPV_ARGS(m_rtvDescriptorHeap.GetAddressOf())));
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvDescHeapDesc, IID_PPV_ARGS(m_d3dRTVDescriptorHeap.GetAddressOf())));
 
 	// Depth Stencil View
 	D3D12_DESCRIPTOR_HEAP_DESC depthStencilHeap = {};
@@ -487,7 +517,7 @@ void Engine::BuildDescriptorHeaps()
 	srvDescHeap.NumDescriptors = 3;
 	srvDescHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;	// Why all 3? We can store all of these (<-) in a heap and upload that to the GPU
 
-	ThrowIfFailed(m_device->CreateDescriptorHeap(&srvDescHeap, IID_PPV_ARGS(m_srvDescriptorHeap.GetAddressOf())));
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&srvDescHeap, IID_PPV_ARGS(m_d3dSRVDescriptorHeap.GetAddressOf())));
 
 	D3D12_DESCRIPTOR_HEAP_DESC imgui_desc_heap_desc = {};
 	imgui_desc_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -541,54 +571,54 @@ void Engine::BuildConstantBufferViews()
 
 void Engine::BuildShaderResourceViews()
 {
-	m_charCoalTex = std::make_unique<Texture>();
-	m_glassTex = std::make_unique<Texture>();
-	m_stoneTex = std::make_unique<Texture>();
+	m_textureMap["glass"] = std::make_unique<Texture>();
+	m_textureMap["stone"] = std::make_unique<Texture>();
+	m_textureMap["roughstone"] = std::make_unique<Texture>();
 
-	m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+	m_d3dCommandList->Reset(m_d3dCommandAllocator.Get(), nullptr);
 
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
 		m_device.Get(),
-		m_commandList.Get(),
+		m_d3dCommandList.Get(),
 		L"assets/glass.dds",
-		m_charCoalTex->m_texResource,
-		m_charCoalTex->m_texHeap
+		m_textureMap["glass"]->m_texResource,
+		m_textureMap["glass"]->m_texHeap
 	));
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
 		m_device.Get(),
-		m_commandList.Get(),
+		m_d3dCommandList.Get(),
 		L"assets/stone.dds",
-		m_glassTex->m_texResource,
-		m_glassTex->m_texHeap
+		m_textureMap["stone"]->m_texResource,
+		m_textureMap["stone"]->m_texHeap
 	));
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(
 		m_device.Get(),
-		m_commandList.Get(),
+		m_d3dCommandList.Get(),
 		L"assets/roughstone.dds",
-		m_stoneTex->m_texResource,
-		m_stoneTex->m_texHeap
+		m_textureMap["roughstone"]->m_texResource,
+		m_textureMap["roughstone"]->m_texHeap
 	));
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	ZeroMemory(&srvDesc, sizeof(D3D12_SHADER_RESOURCE_VIEW_DESC));
 
-	srvDesc.Format = m_glassTex->m_texResource->GetDesc().Format;
+	srvDesc.Format = m_textureMap["glass"]->m_texResource->GetDesc().Format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Texture2D.MipLevels = m_glassTex->m_texResource->GetDesc().MipLevels;
+	srvDesc.Texture2D.MipLevels = m_textureMap["glass"]->m_texResource->GetDesc().MipLevels;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 
 	// Point to the start of the descriptor heap
 	// We need GPU access to the texture location in the heap, so we need to store that address in our texture class
-	CD3DX12_GPU_DESCRIPTOR_HANDLE hGPUDescriptor(m_srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	CD3DX12_CPU_DESCRIPTOR_HANDLE hCPUDescriptor(m_srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_GPU_DESCRIPTOR_HANDLE hGPUDescriptor(m_d3dSRVDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hCPUDescriptor(m_d3dSRVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 	// Glass texture
 	{
-		srvDesc.Format = m_glassTex->m_texResource->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = m_glassTex->m_texResource->GetDesc().MipLevels;
+		srvDesc.Format = m_textureMap["glass"]->m_texResource->GetDesc().Format;
+		srvDesc.Texture2D.MipLevels = m_textureMap["glass"]->m_texResource->GetDesc().MipLevels;
 
-		m_glassTex->hGPUHandle = hGPUDescriptor;
-		m_device->CreateShaderResourceView(m_glassTex->m_texResource.Get(), &srvDesc, hCPUDescriptor);
+		m_textureMap["glass"]->hGPUHandle = hGPUDescriptor;
+		m_device->CreateShaderResourceView(m_textureMap["glass"]->m_texResource.Get(), &srvDesc, hCPUDescriptor);
 	}
 
 	// Point to the next descriptor in the heap
@@ -597,11 +627,11 @@ void Engine::BuildShaderResourceViews()
 
 	// Char Coal tile texture
 	{
-		srvDesc.Format = m_charCoalTex->m_texResource->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = m_charCoalTex->m_texResource->GetDesc().MipLevels;
+		srvDesc.Format = m_textureMap["roughstone"]->m_texResource->GetDesc().Format;
+		srvDesc.Texture2D.MipLevels = m_textureMap["roughstone"]->m_texResource->GetDesc().MipLevels;
 
-		m_charCoalTex->hGPUHandle = hGPUDescriptor;
-		m_device->CreateShaderResourceView(m_charCoalTex->m_texResource.Get(), &srvDesc, hCPUDescriptor);
+		m_textureMap["roughstone"]->hGPUHandle = hGPUDescriptor;
+		m_device->CreateShaderResourceView(m_textureMap["roughstone"]->m_texResource.Get(), &srvDesc, hCPUDescriptor);
 	}
 
 	// Point to the next descriptor in the heap
@@ -610,11 +640,11 @@ void Engine::BuildShaderResourceViews()
 
 	// Stone texture
 	{
-		srvDesc.Format = m_stoneTex->m_texResource->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = m_stoneTex->m_texResource->GetDesc().MipLevels;
+		srvDesc.Format = m_textureMap["stone"]->m_texResource->GetDesc().Format;
+		srvDesc.Texture2D.MipLevels = m_textureMap["stone"]->m_texResource->GetDesc().MipLevels;
 
-		m_stoneTex->hGPUHandle = hGPUDescriptor;
-		m_device->CreateShaderResourceView(m_stoneTex->m_texResource.Get(), &srvDesc, hCPUDescriptor);
+		m_textureMap["stone"]->hGPUHandle = hGPUDescriptor;
+		m_device->CreateShaderResourceView(m_textureMap["stone"]->m_texResource.Get(), &srvDesc, hCPUDescriptor);
 	}
 
 }

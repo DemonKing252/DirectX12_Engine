@@ -46,12 +46,12 @@ protected:
 
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device;
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> m_dxgiSwapChain;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_d3dCommandList;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_d3dCommandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_renderTargets[m_iNumBuffers];
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvDescriptorHeap;
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_srvDescriptorHeap;
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_d3dRTVDescriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_d3dSRVDescriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_d3dCommandQueue;
 
 	ID3D12DescriptorHeap* m_dsvHeap;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_depthStencilResource;
@@ -63,10 +63,10 @@ public:
 	D3DApp(const D3DApp& rhs) = delete;
 	void operator=(const D3DApp& rhs) = delete;
 
-	virtual void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath);
-	virtual void Update(GameTimer& gt);
-	virtual void Draw();
-	virtual void Clean();
+	virtual void Initialize(GameTimer* gameTimer, const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath);
+	virtual void Update(GameTimer* gameTimer);
+	virtual void Draw(GameTimer* gameTimer);
+	virtual void Clean(GameTimer* gameTimer);
 	
 	bool Ready();	// ready for resize commands (ie: swap chain and command objects are set up)
 	void ResetCommandObjects();			// Reset the command list and command allocator for a new frame
@@ -75,6 +75,8 @@ public:
 	void BuildCommandObjects();		
 	void BuildRenderTargetViews();	// For each frame
 	void BuildDepthStencilViews();
+
+	std::vector<std::wstring> m_adapters;
 
 	/* Sync the CPU and GPU */
 	void SyncPreviousFrame();		

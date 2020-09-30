@@ -30,7 +30,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 	else
 	{
-		D3D12App::GetApp()->Initialize(win32App, L"DefaultVS.hlsl", L"DefaultPS.hlsl", L"ShadowPS.hlsl");
+		D3D12App::GetApp()->Initialize(&gt, win32App, L"DefaultVS.hlsl", L"DefaultPS.hlsl", L"ShadowPS.hlsl");
 		while (!win32App->QuitMessagePosted())
 		{
 			gt.frameStart = clock();
@@ -42,13 +42,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			D3D12App::GetApp()->ResetCommandObjects();
 
 			// Update
-			D3D12App::GetApp()->Update(gt);
+			D3D12App::GetApp()->Update(&gt);
 
 			// Draw
-			D3D12App::GetApp()->Draw();
+			D3D12App::GetApp()->Draw(&gt);
 
 			// Swap the front and back buffers
-			D3D12App::GetApp()->SwapBuffers();
+			D3D12App::GetApp()->SwapBuffers(&gt);
 
 			// Sync the CPU/GPU to prevent screen tearing/flickering
 			D3D12App::GetApp()->SyncPreviousFrame();
@@ -57,13 +57,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			gt.SetDeltaTime((gt.frameEnd - gt.frameStart) / CLOCKS_PER_SEC);
 
 			if (gt.Running())
-				gt.SetTime(gt.GetTime() + gt.GetDeltaTime());
+				gt.SetTime(gt.GetTimeNow() + gt.GetDeltaTime());
 
 
 		}
 
 		win32App->Clean();
-		D3D12App::GetApp()->Clean();
+		D3D12App::GetApp()->Clean(&gt);
 	}
 	return 0;
 }

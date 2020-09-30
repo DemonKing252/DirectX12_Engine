@@ -14,6 +14,7 @@
 #include "ImGui/imgui_impl_win32.h"
 #include <cassert>
 #include "GameTimer.h"
+#include <unordered_map>
 /* Engine takes care of our game */
 /* D3DApp takes care of setting up D3D */
 
@@ -28,11 +29,12 @@ public:
 	~Engine();
 	static Engine* GetApp();
 	
-	void Initialize(const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath) override;
-	void Update(GameTimer& gt) override;
-	void Draw() override;
-	void SwapBuffers() const;
-	void Clean() override;
+	// Can be overrided in another class if we want:
+	virtual void Initialize(GameTimer* gameTimer, const std::shared_ptr<Win32App> window, const LPCWSTR vsPath, const LPCWSTR dafaultpsPath, const LPCWSTR shadowpsPath) override;
+	virtual void Update(GameTimer* gameTimer) override;
+	virtual void Draw(GameTimer* gameTimer) override;
+	virtual void SwapBuffers(GameTimer* gameTimer) const;
+	virtual void Clean(GameTimer* gameTimer) override;
 	
 	void UpdateConstants();
 	void BuildDescriptorHeaps();	// Used for RTV
@@ -46,9 +48,9 @@ private:
 	std::vector<std::shared_ptr<MeshGeometry>> m_meshes[Pipeline::Count];
 	
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
-	std::unique_ptr<Texture> m_charCoalTex;
-	std::unique_ptr<Texture> m_glassTex;
-	std::unique_ptr<Texture> m_stoneTex;
+	
+	std::unordered_map<std::string, std::unique_ptr<Texture>> m_textureMap;
+
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState[Pipeline::Count];
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_cbvResources[Pipeline::Count];
@@ -62,6 +64,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_imguiDescriptorHeap;
 	CD3DX12_CPU_DESCRIPTOR_HANDLE m_himguiCPUHandle;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE m_himguiGPUHandle;
+
+	ImFont* font;
 
 	static Engine* s_pInstance;
 
